@@ -26,15 +26,18 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
       return;
     }
 
+    // Validar autenticación
+    if (!user || !user.getIdToken) {
+      setError('Debes iniciar sesión para crear preguntas.');
+      return;
+    }
+
     setLoading(true);
     try {
       const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-      // ✅ Obtener token del usuario autenticado
-      let token = null;
-      if (user && user.getIdToken) {
-        token = await user.getIdToken();
-      }
+      // Obtener token del usuario autenticado
+      let token = await user.getIdToken();
 
       const payload = {
         text: question,
@@ -48,7 +51,7 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})  // ✅ Se envía el token si existe
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(payload)
       });
