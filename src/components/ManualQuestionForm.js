@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useAuth } from '../AuthContext';  // ✅ Importar el contexto de autenticación
 
 const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
+  const { user } = useAuth();  // ✅ Ahora obtenemos el usuario desde el contexto
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '', '', '']);
   const [correctIndex, setCorrectIndex] = useState(0);
@@ -17,22 +19,23 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Validaciones
     if (!question.trim() || options.some(opt => !opt.trim())) {
       setError('Completa la pregunta y todas las opciones.');
       return;
     }
+
     setLoading(true);
     try {
       const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-      const token = window?.authUser && window.authUser.getIdToken ? await window.authUser.getIdToken() : null;
-      // Si el AuthContext está disponible, úsalo
-      let finalToken = token;
-      if (!finalToken && typeof window !== 'undefined') {
-        try {
-          const { user } = require('../AuthContext').useAuth();
-          if (user && user.getIdToken) finalToken = await user.getIdToken();
-        } catch {}
+
+      // ✅ Obtener token del usuario autenticado
+      let token = null;
+      if (user && user.getIdToken) {
+        token = await user.getIdToken();
       }
+
       const payload = {
         text: question,
         options,
@@ -40,17 +43,23 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
         category: selectedTopic,
         explanation: ''
       };
+
       const res = await fetch(`${apiBase}/api/questions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(finalToken ? { Authorization: `Bearer ${finalToken}` } : {})
+          ...(token ? { Authorization: `Bearer ${token}` } : {})  // ✅ Se envía el token si existe
         },
         body: JSON.stringify(payload)
       });
+
       const data = await res.json();
+
       if (res.ok && data.success !== false) {
-        onQuestionCreated && onQuestionCreated(data.question || { question, options, correctAnswerIndex: correctIndex, category: selectedTopic });
+        // ✅ Llamar al callback para notificar que la pregunta fue creada
+        onQuestionCreated && onQuestionCreated(
+          data.question || { question, options, correctAnswerIndex: correctIndex, category: selectedTopic }
+        );
       } else {
         setError(data.error || 'Error al guardar la pregunta');
       }
@@ -64,16 +73,24 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
   return (
     <form className="manual-question-form" onSubmit={handleSubmit}>
       <h3>Agregar pregunta manual</h3>
+
       <label>
         Tema:
         <select value={selectedTopic} onChange={e => setSelectedTopic(e.target.value)}>
           {topics.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
       </label>
+
       <label>
         Pregunta:
-        <input type="text" value={question} onChange={e => setQuestion(e.target.value)} required />
+        <input 
+          type="text" 
+          value={question} 
+          onChange={e => setQuestion(e.target.value)} 
+          required 
+        />
       </label>
+
       <div>
         Opciones:
         {options.map((opt, idx) => (
@@ -97,10 +114,16 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
           </div>
         ))}
       </div>
+
       {error && <div className="error-message">{error}</div>}
+
       <div className="manual-question-actions">
-        <button type="button" onClick={onCancel} disabled={loading}>Cancelar</button>
-        <button type="submit" disabled={loading}>{loading ? 'Guardando...' : 'Guardar pregunta'}</button>
+        <button type="button" onClick={onCancel} disabled={loading}>
+          Cancelar
+        </button>
+        <button type="submit" disabled={loading}>
+          {loading ? 'Guardando...' : 'Guardar pregunta'}
+        </button>
       </div>
     </form>
   );
