@@ -46,8 +46,8 @@ export default function GameLobbyPage() {
   }, [gameId, user, navigate]);
 
   const handleStart = () => {
-  console.log('[GameLobbyPage] Emitiendo startGame:', { gameId });
-  socket.emit('startGame', { gameId });
+    console.log('[GameLobbyPage] Emitiendo startGame:', { gameId });
+    socket.emit('startGame', { gameId });
   };
 
   const copyGameCode = () => {

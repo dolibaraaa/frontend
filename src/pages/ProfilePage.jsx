@@ -1,8 +1,5 @@
-
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
-
 import './ProfilePage.css';
 
 export default function ProfilePage() {
@@ -17,7 +14,7 @@ export default function ProfilePage() {
       if (!user) return;
       let statsData = null;
       try {
-        const apiBase = process.env.REACT_APP_API_URL;
+        const apiBase = import.meta.env.VITE_API_URL;
         // Obtener el token de Firebase
         const token = user && (await user.getIdToken());
         const statsRes = await fetch(`${apiBase}/api/users/me/stats?uid=${user.uid}`,

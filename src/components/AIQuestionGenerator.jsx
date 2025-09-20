@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -31,7 +30,7 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
 
   const fetchTopics = async () => {
     try {
-      const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const response = await fetch(`${apiBase}/api/ai/topics`);
       const data = await response.json();
       if (data.success && Array.isArray(data.topics) && data.topics.length > 0) {
@@ -52,7 +51,7 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
 
   const fetchDifficultyLevels = async () => {
     try {
-      const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const response = await fetch(`${apiBase}/api/ai/difficulty-levels`);
       const data = await response.json();
       if (data.success) {
@@ -69,11 +68,11 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
       return;
     }
 
-  setLoading(true);
-  setError('');
+    setLoading(true);
+    setError('');
 
     try {
-      const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const token = user && user.getIdToken ? await user.getIdToken() : null;
       const response = await fetch(`${apiBase}/api/ai/generate-questions`, {
         method: 'POST',
@@ -144,9 +143,9 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
           return;
         }
         // Redirigir al usuario a la pantalla principal para que pueda crear la partida manualmente
-  onQuestionsGenerated(data.questions);
-  setLoading(false);
-  // No navegues ni cierres aquí, deja que el Dashboard controle el cierre
+        onQuestionsGenerated(data.questions);
+        setLoading(false);
+        // No navegues ni cierres aquí, deja que el Dashboard controle el cierre
       } else {
         setError(data.error || 'Error generando preguntas');
         console.error('Error generando preguntas:', data.error);
@@ -201,7 +200,7 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
                     setManualStep(manualStep + 1);
                   } else {
                     // Guardar todas las preguntas en lote
-                    const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+                    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
                     user.getIdToken().then(token => {
                       fetch(`${apiBase}/api/questions/bulk`, {
                         method: 'POST',
@@ -331,4 +330,3 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
 }
 
 export default AIQuestionGenerator;
-

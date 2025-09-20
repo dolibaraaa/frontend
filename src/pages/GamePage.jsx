@@ -90,11 +90,11 @@ export default function GamePage() {
   }, [user, gameId, navigate]);
 
   const handleSelect = useCallback((idx) => {
-  if (selected !== null) return; // Prevent multiple selections
-  setSelected(idx);
-  // Enviar también el valor de la opción seleccionada
-  const answerValue = question && Array.isArray(question.options) ? question.options[idx] : undefined;
-  socket.emit('submitAnswer', { gameId, uid: user.uid, answerIndex: idx, answerValue });
+    if (selected !== null) return; // Prevent multiple selections
+    setSelected(idx);
+    // Enviar también el valor de la opción seleccionada
+    const answerValue = question && Array.isArray(question.options) ? question.options[idx] : undefined;
+    socket.emit('submitAnswer', { gameId, uid: user.uid, answerIndex: idx, answerValue });
   }, [gameId, user, selected]);
 
   const handleTimerEnd = useCallback(() => {

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useAuth } from '../AuthContext';  // ✅ Importar el contexto de autenticación
+import { useAuth } from '../AuthContext';
 
 const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
-  const { user } = useAuth();  // ✅ Ahora obtenemos el usuario desde el contexto
+  const { user } = useAuth();
   const [question, setQuestion] = useState('');
   const [options, setOptions] = useState(['', '', '', '']);
   const [correctIndex, setCorrectIndex] = useState(0);
@@ -34,7 +34,7 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
 
     setLoading(true);
     try {
-      const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
       // Obtener token del usuario autenticado
       let token = await user.getIdToken();

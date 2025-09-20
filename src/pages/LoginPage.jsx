@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
-import { auth, db } from '../services/firebase';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { auth } from '../services/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
 import './AuthPage.css';
 
-export default function RegisterPage() {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      navigate('/complete-profile');
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -31,11 +30,11 @@ export default function RegisterPage() {
       <div className="auth-container">
         <div className="auth-header">
           <h1>⚡ BrainBlitz</h1>
-          <h2>¡Únete a la diversión!</h2>
-          <p>Crea tu cuenta y comienza a jugar</p>
+          <h2>¡Bienvenido de nuevo!</h2>
+          <p>Inicia sesión para continuar tu aventura de trivia</p>
         </div>
 
-        <form onSubmit={handleRegister} className="auth-form">
+        <form onSubmit={handleLogin} className="auth-form">
           <div className="input-group">
             <input 
               type="email" 
@@ -46,6 +45,7 @@ export default function RegisterPage() {
               disabled={loading}
             />
           </div>
+          
           <div className="input-group">
             <input 
               type="password" 
@@ -56,19 +56,24 @@ export default function RegisterPage() {
               disabled={loading}
             />
           </div>
+
           {error && (
             <div className="error-message">
               {error}
             </div>
           )}
+
           <button type="submit" className="btn btn-primary btn-large" disabled={loading}>
-            {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+            {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
           </button>
         </form>
 
         <div className="auth-footer">
           <p>
-            ¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link>
+            ¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link>
+          </p>
+          <p>
+            <Link to="/reset">¿Olvidaste tu contraseña?</Link>
           </p>
         </div>
       </div>
