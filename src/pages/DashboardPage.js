@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { socket } from '../services/socket';
-import AIQuestionGenerator from '../components/AIQuestionGenerator';
+const AIQuestionGenerator = React.lazy(() => import('../components/AIQuestionGenerator'));
 import './DashboardPage.css';
 
 export default function DashboardPage() {
@@ -181,6 +181,7 @@ export default function DashboardPage() {
       </main>
 
       {showAIGenerator && (
+          <Suspense fallback={<div>Cargando generador de preguntas...</div>}>
         <AIQuestionGenerator
           onQuestionsGenerated={qs => {
             handleQuestionsGenerated(qs);
@@ -188,6 +189,7 @@ export default function DashboardPage() {
           }}
           onClose={() => setShowAIGenerator(false)}
         />
+          </Suspense>
       )}
     </div>
   );
