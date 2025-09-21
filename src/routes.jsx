@@ -17,7 +17,7 @@ const ProtectedRoute = React.lazy(() => import('./components/ProtectedRoute'));
 export default function AppRoutes() {
   return (
     <Router>
-      <Suspense fallback={<div>Cargando página...</div>}>
+      <Suspense fallback={null}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/register" element={<RegisterPage />} />

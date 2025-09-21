@@ -5,7 +5,7 @@ import { useAuth } from '../AuthContext';
 export default function ProtectedRoute({ children, adminOnly }) {
   const { user, loading } = useAuth();
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
   if (adminOnly && user.email !== 'admin@example.com') return <Navigate to="/dashboard" replace />;
   return children;

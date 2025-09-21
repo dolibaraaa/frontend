@@ -58,11 +58,16 @@ export default function GameLobbyPage() {
   if (error) {
     return (
       <div className="lobby-page error-page">
+        <div className="lobby-overlay" />
         <div className="error-container">
           <h2>❌ Error</h2>
-          <p>{error}</p>
+          <p>{
+            error === 'Game already started'
+              ? 'La partida ya ha comenzado. No puedes unirte en este momento.'
+              : error
+          }</p>
           <button onClick={() => navigate('/dashboard')} className="btn btn-primary">
-            Back to Dashboard
+            Volver al inicio
           </button>
         </div>
       </div>
@@ -71,27 +76,28 @@ export default function GameLobbyPage() {
 
   return (
     <div className="lobby-page">
+      <div className="lobby-overlay" />
       <div className="lobby-container">
         <header className="lobby-header">
-          <h1>🎮 Game Lobby</h1>
+          <h1>🎮 Sala de Juego</h1>
           <div className="game-code-section">
-            <h3>Game Code</h3>
+            <h3>Código de la partida</h3>
             <div className="game-code-display">
               <span className="game-code">{gameId}</span>
               <button onClick={copyGameCode} className="copy-btn">
-                📋 Copy
+                📋 Copiar
               </button>
             </div>
-            <p className="share-text">Share this code with friends to join your game!</p>
+            <p className="share-text">¡Comparte este código con tus amigos para que se unan!</p>
           </div>
         </header>
 
         <main className="lobby-main">
           <div className="players-section">
-            <h3>👥 Players ({players.length})</h3>
+            <h3>👥 Jugadores ({players.length})</h3>
             <div className="players-list">
               {players.map((player, index) => (
-                <div key={player.uid} className={`player-card ${player.uid === hostId ? 'host' : ''}`}>
+                <div key={player.uid} className={`player-card${player.uid === hostId ? ' host' : ''}`}> {/* Espaciado fijo */}
                   <div className="player-avatar">
                     {player.uid === hostId ? '👑' : '👤'}
                   </div>
@@ -100,7 +106,7 @@ export default function GameLobbyPage() {
                       {player.displayName || player.email}
                     </span>
                     {player.uid === hostId && (
-                      <span className="host-badge">Host</span>
+                      <span className="host-badge">Anfitrión</span>
                     )}
                   </div>
                 </div>
@@ -111,21 +117,21 @@ export default function GameLobbyPage() {
           <div className="game-controls">
             {user && user.uid === hostId && status === 'waiting' ? (
               <div className="host-controls">
-                <p>Ready to start the game?</p>
+                <p>¿Listo para comenzar la partida?</p>
                 <button 
                   onClick={handleStart} 
                   className="btn btn-primary btn-large"
                   disabled={players.length < 1}
                 >
-                  🚀 Start Game
+                  🚀 Iniciar partida
                 </button>
                 {players.length < 1 && (
-                  <p className="waiting-text">Waiting for players to join...</p>
+                  <p className="waiting-text">Esperando a que se unan jugadores...</p>
                 )}
               </div>
             ) : (
               <div className="waiting-controls">
-                <p>⏳ Waiting for the host to start the game...</p>
+                <p>⏳ Esperando a que el anfitrión inicie la partida...</p>
                 <div className="loading-dots">
                   <span></span>
                   <span></span>

@@ -14,6 +14,8 @@ export default function DashboardPage() {
   const [showAIGenerator, setShowAIGenerator] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState('');
   const [generatedQuestions, setGeneratedQuestions] = useState([]);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     fetchPublicGames();
@@ -21,7 +23,7 @@ export default function DashboardPage() {
 
   const fetchPublicGames = async () => {
     try {
-      const apiBase = import.meta.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const response = await fetch(`${apiBase}/api/games`);
       const data = await response.json();
       const gamesArray = Array.isArray(data) ? data : [];
@@ -34,13 +36,17 @@ export default function DashboardPage() {
 
   const handleCreateGame = async () => {
     if (!selectedTopic) {
-      alert('Por favor selecciona un tema antes de crear la partida.');
+      setErrorMessage('Por favor selecciona un tema antes de crear la partida.');
+      setTimeout(() => setErrorMessage(''), 4000);
       return;
     }
     if (!generatedQuestions.length) {
-      alert('Primero debes generar preguntas con IA antes de crear la partida.');
+      setErrorMessage('Primero debes generar preguntas con IA antes de crear la partida.');
+      setTimeout(() => setErrorMessage(''), 4000);
       return;
     }
+    // Forzar que todas las preguntas tengan el category igual al tema seleccionado
+    const fixedQuestions = generatedQuestions.map(q => ({ ...q, category: selectedTopic }));
     setLoading(true);
     socket.connect();
     // Obtener el token de autenticación del usuario
@@ -54,45 +60,70 @@ export default function DashboardPage() {
       isPublic: true,
       token,
       topic: selectedTopic,
-      questions: generatedQuestions,
-      count: generatedQuestions.length
+      questions: fixedQuestions,
+      count: fixedQuestions.length
     });
     socket.on('gameCreated', ({ gameId, questions }) => {
       setLoading(false);
-      alert(`¡Partida creada con ${questions?.length || 0} preguntas!`);
-      navigate(`/lobby/${gameId}`);
+      setSuccessMessage(`¡Tu partida fue creada con ${questions?.length || 0} preguntas! Invita a tus amigos y disfruta. 🚀`);
+      setTimeout(() => setSuccessMessage(''), 5000);
+      setTimeout(() => navigate(`/lobby/${gameId}`), 1200);
     });
     socket.on('error', ({ error }) => {
-      setLoading(false);
-      alert('Error creating game: ' + error);
+  setLoading(false);
+  setErrorMessage('Ocurrió un error al crear la partida: ' + error);
+  setTimeout(() => setErrorMessage(''), 5000);
     });
   };
 
   const handleJoinGame = () => {
     if (!gameCode.trim()) {
-      alert('Please enter a game code');
+      setErrorMessage('Por favor ingresa un código de partida.');
+      setTimeout(() => setErrorMessage(''), 4000);
       return;
     }
     navigate(`/lobby/${gameCode}`);
   };
 
   const handleJoinPublicGame = (gameId) => {
-    navigate(`/lobby/${gameId}`);
+  setSuccessMessage('¡Te uniste a la partida! Cargando sala...');
+  setTimeout(() => setSuccessMessage(''), 4000);
+  setTimeout(() => navigate(`/lobby/${gameId}`), 1200);
   };
 
   const handleQuestionsGenerated = (questions) => {
-    console.log('Preguntas generadas:', questions);
     setGeneratedQuestions(questions);
-    // Bloquear el cambio de tema y usar el último tema generado
     if (questions && questions.length > 0 && questions[0].category) {
       setSelectedTopic(questions[0].category);
     }
-    // Opcional: podrías mostrar el tema generado en la UI para confirmación
-    alert(`¡Se generaron ${questions.length} preguntas! Tema seleccionado: ${questions[0]?.category || ''}`);
+    setSuccessMessage(`¡Listo! Se generaron ${questions.length} preguntas para el tema "${questions[0]?.category || ''}". 🎉`);
+    setTimeout(() => setSuccessMessage(''), 5000);
   };
 
   return (
     <div className="dashboard-page">
+      {(successMessage || errorMessage) && (
+        <div style={{
+          position: 'fixed',
+          top: 24,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 2000,
+          background: errorMessage ? 'rgba(239,68,68,0.97)' : 'rgba(99,102,241,0.95)',
+          color: '#fff',
+          padding: '1.1rem 2.2rem',
+          borderRadius: 18,
+          fontWeight: 700,
+          fontSize: '1.15rem',
+          boxShadow: '0 4px 24px rgba(42,122,228,0.18)',
+          border: '2px solid #fff',
+          letterSpacing: 0.5,
+          textAlign: 'center',
+          animation: 'fadeIn 0.5s',
+        }}>
+          {errorMessage || successMessage}
+        </div>
+      )}
       <header className="dashboard-header">
         <div className="user-info">
           <h2>¡Bienvenido, {user?.displayName || user?.email}!</h2>
@@ -104,6 +135,13 @@ export default function DashboardPage() {
               Cerrar sesión
             </button>
           </div>
+          <style>{`
+            .btn, .btn-primary, .btn-secondary, .btn-outline, .btn-ai {
+              min-width: 140px !important;
+              font-size: 1.08rem !important;
+              white-space: nowrap !important;
+            }
+          `}</style>
         </div>
       </header>
 
@@ -124,12 +162,12 @@ export default function DashboardPage() {
               <button 
                 onClick={() => setShowAIGenerator(true)} 
                 className="btn btn-ai btn-large"
-                title="Genera preguntas personalizadas con IA antes de crear tu partida."
+                title="Genera preguntas personalizadas antes de crear tu partida."
               >
-                🤖 Generar preguntas con IA
+                🤖 Generar preguntas
               </button>
               <div style={{marginTop: 8, color: '#555', fontSize: 14}}>
-                <strong>Ayuda:</strong> Antes de crear una partida, genera tus propias preguntas con IA. Así tu juego tendrá contenido personalizado y reciente.
+                <strong>Ayuda:</strong> Antes de crear una partida, puedes generar preguntas automáticamente o agregar preguntas manuales personalizadas. Así tu juego tendrá contenido único, reciente y adaptado a tus necesidades.
               </div>
             </div>
           </div>

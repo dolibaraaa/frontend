@@ -1,23 +1,39 @@
 .lobby-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  font-family: 'Arial', sans-serif;
+  background: var(--bb-bg-primary);
+  color: var(--bb-text-primary);
+  font-family: 'Inter', 'Arial', sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+/* Overlay glassmorphism para el fondo del lobby */
+.lobby-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  background: rgba(30, 41, 59, 0.45);
+  backdrop-filter: blur(8px) saturate(1.2);
+  pointer-events: none;
+}
 }
 
 .lobby-container {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 2rem;
+  background: rgba(26,26,46,0.85);
+  backdrop-filter: blur(14px);
+  border-radius: 24px;
+  border: 2.5px solid var(--bb-primary);
+  padding: 2.5rem 2rem;
   max-width: 600px;
   width: 100%;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--bb-shadow-lg);
 }
 
 .lobby-header {
@@ -28,7 +44,13 @@
 .lobby-header h1 {
   font-size: 2.5rem;
   margin-bottom: 1rem;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  background: var(--bb-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-shadow: none;
 }
 
 .game-code-section h3 {
@@ -45,30 +67,33 @@
 }
 
 .game-code {
-  font-size: 3rem;
-  font-weight: bold;
-  background: rgba(255, 255, 255, 0.2);
+  font-size: 2.5rem;
+  font-weight: 900;
+  background: rgba(99, 102, 241, 0.13);
   padding: 1rem 2rem;
-  border-radius: 15px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  letter-spacing: 0.5rem;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  border-radius: 16px;
+  border: 2px solid var(--bb-primary-light);
+  letter-spacing: 0.4rem;
+  color: var(--bb-primary);
+  text-shadow: none;
 }
 
 .copy-btn {
-  background: #ff6b6b;
-  color: white;
+  background: var(--bb-gradient-secondary);
+  color: #fff;
   border: none;
-  padding: 0.75rem 1rem;
   border-radius: 10px;
-  font-size: 0.9rem;
+  padding: 0.5rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
+  box-shadow: var(--bb-shadow-sm);
+  transition: var(--bb-transition);
 }
 
 .copy-btn:hover {
-  background: #ff5252;
-  transform: translateY(-2px);
+  background: var(--bb-accent-light);
+  color: #fff;
 }
 
 .share-text {
@@ -97,11 +122,13 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 1rem;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
+  background: rgba(22,33,62,0.7);
+  border-radius: 14px;
+  padding: 1rem 1.3rem;
+  margin-bottom: 0.7rem;
+  box-shadow: var(--bb-shadow-sm);
+  border: 2px solid var(--bb-primary-light);
+  transition: var(--bb-transition);
 }
 
 .player-card.host {
@@ -142,12 +169,14 @@
 }
 
 .host-badge {
-  background: #ff6b6b;
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 15px;
-  font-size: 0.8rem;
-  font-weight: bold;
+  background: var(--bb-warning);
+  color: #222;
+  font-weight: 900;
+  padding: 0.2rem 0.8rem;
+  border-radius: 8px;
+  margin-left: 0.7rem;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
   width: fit-content;
 }
 
@@ -177,14 +206,14 @@
 }
 
 .btn-primary {
-  background: #ff6b6b;
-  color: white;
+  background: var(--bb-gradient-primary);
+  color: #fff;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #ff5252;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+  background: var(--bb-gradient-secondary);
+  color: #fff;
+  box-shadow: var(--bb-shadow-md);
 }
 
 .btn-large {
@@ -236,27 +265,46 @@
 }
 
 .error-page {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  min-height: 100vh;
+  background: var(--bb-bg-primary);
+  color: var(--bb-text-primary);
+  font-family: 'Inter', 'Arial', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(239, 68, 68, 0.13) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.13) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.08) 0%, transparent 50%);
 }
 
 .error-container {
   text-align: center;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 3rem;
+  background: rgba(26,26,46,0.85);
+  backdrop-filter: blur(14px);
+  border-radius: 24px;
+  border: 2.5px solid var(--bb-accent-light);
+  padding: 3rem 2rem;
   max-width: 400px;
+  box-shadow: var(--bb-shadow-lg);
 }
 
 .error-container h2 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
+  font-size: 2.2rem;
+  margin-bottom: 1.2rem;
+  background: var(--bb-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-shadow: none;
 }
 
 .error-container p {
   margin-bottom: 2rem;
-  opacity: 0.9;
+  opacity: 0.95;
+  font-size: 1.1rem;
 }
 
 @media (max-width: 768px) {

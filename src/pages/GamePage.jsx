@@ -129,10 +129,10 @@ export default function GamePage() {
     <div className="game-page">
       <header className="game-header">
         <div className="game-info">
-          <h2>🎯 Quiz Game</h2>
+          <h2>🎯 Juego de Preguntas</h2>
           <div className="progress-info">
             <span className="question-counter">
-              Question {questionIndex + 1} of {totalQuestions || '?'}
+              Pregunta {questionIndex + 1} de {totalQuestions || '?'}
             </span>
             <div className="progress-bar">
               <div 
@@ -144,7 +144,7 @@ export default function GamePage() {
         </div>
         <div className="player-rank">
           <span className="rank-number">#{getPlayerRank()}</span>
-          <span className="rank-label">Your Rank</span>
+          <span className="rank-label">Tu posición</span>
         </div>
       </header>
 
@@ -170,14 +170,14 @@ export default function GamePage() {
             {showResult && result && (
               <div className="result-container">
                 <div className="result-header">
-                  <h4>✅ Answer Revealed!</h4>
+                  <h4>✅ ¡Respuesta revelada!</h4>
                 </div>
                 <div className="correct-answer">
-                  <strong>Correct Answer:</strong> {question.options[result.correctAnswerIndex]}
+                  <strong>Respuesta correcta:</strong> {question.options[result.correctAnswerIndex]}
                 </div>
                 {result.explanation && (
                   <div className="explanation">
-                    <strong>Explanation:</strong> {result.explanation}
+                    <strong>Explicación:</strong> {result.explanation}
                   </div>
                 )}
               </div>
@@ -188,7 +188,7 @@ export default function GamePage() {
         {!question && !questionTimeout && (
           <div className="waiting-container">
             <div className="loading-spinner"></div>
-            <p>Waiting for next question...</p>
+            <p>Esperando la siguiente pregunta...</p>
           </div>
         )}
         {!question && questionTimeout && (

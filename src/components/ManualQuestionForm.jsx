@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../AuthContext';
+import './ManualQuestionForm.css';
 
 const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
   const { user } = useAuth();
@@ -34,7 +35,7 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
 
     setLoading(true);
     try {
-      const apiBase = import.meta.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
       // Obtener token del usuario autenticado
       let token = await user.getIdToken();
@@ -75,57 +76,54 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
 
   return (
     <form className="manual-question-form" onSubmit={handleSubmit}>
-      <h3>Agregar pregunta manual</h3>
-
+  <h3>Escribe tu pregunta</h3>
       <label>
         Tema:
         <select value={selectedTopic} onChange={e => setSelectedTopic(e.target.value)}>
           {topics.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
       </label>
-
       <label>
         Pregunta:
-        <input 
-          type="text" 
-          value={question} 
-          onChange={e => setQuestion(e.target.value)} 
-          required 
+        <input
+          type="text"
+          value={question}
+          onChange={e => setQuestion(e.target.value)}
+          required
         />
       </label>
-
       <div>
         Opciones:
-        {options.map((opt, idx) => (
-          <div key={idx}>
-            <input
-              type="text"
-              value={opt}
-              onChange={e => handleOptionChange(idx, e.target.value)}
-              required
-              placeholder={`Opción ${idx + 1}`}
-            />
-            <label>
+        <div className="manual-options-list">
+          {options.map((opt, idx) => (
+            <div key={idx} className="manual-option-row">
               <input
-                type="radio"
-                name="correctOption"
-                checked={correctIndex === idx}
-                onChange={() => setCorrectIndex(idx)}
+                type="text"
+                value={opt}
+                onChange={e => handleOptionChange(idx, e.target.value)}
+                required
+                placeholder={`Opción ${idx + 1}`}
               />
-              Correcta
-            </label>
-          </div>
-        ))}
+              <label>
+                <input
+                  type="radio"
+                  name="correctOption"
+                  checked={correctIndex === idx}
+                  onChange={() => setCorrectIndex(idx)}
+                />
+                Correcta
+              </label>
+            </div>
+          ))}
+        </div>
       </div>
-
       {error && <div className="error-message">{error}</div>}
-
       <div className="manual-question-actions">
-        <button type="button" onClick={onCancel} disabled={loading}>
-          Cancelar
+          <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={loading} style={{ minWidth: 100, fontSize: '1.08rem', whiteSpace: 'nowrap' }}>
+            Atrás
         </button>
-        <button type="submit" disabled={loading}>
-          {loading ? 'Guardando...' : 'Guardar pregunta'}
+          <button type="submit" className="btn btn-primary" disabled={loading} style={{ minWidth: 140, fontSize: '1.08rem', whiteSpace: 'nowrap' }}>
+            {loading ? 'Guardando...' : 'Guardar'}
         </button>
       </div>
     </form>

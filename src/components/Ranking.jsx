@@ -24,7 +24,7 @@ export default function Ranking({ players }) {
 
   return (
     <div className="ranking">
-      <h3 className="ranking-title">🏆 Leaderboard</h3>
+      <h3 className="ranking-title">🏆 Tabla de posiciones</h3>
       <div className="players-list">
         {sortedPlayers.map((player, index) => (
           <div key={player.uid} className={`player-item ${getRankClass(index)}`}>
@@ -35,7 +35,7 @@ export default function Ranking({ players }) {
               <span className="player-name">
                 {player.displayName || player.email}
               </span>
-              <span className="player-score">{player.score} pts</span>
+              <span className="player-score">{player.score} puntos</span>
             </div>
           </div>
         ))}

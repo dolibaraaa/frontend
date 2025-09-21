@@ -30,28 +30,39 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
 
   const fetchTopics = async () => {
     try {
-      const apiBase = import.meta.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const response = await fetch(`${apiBase}/api/ai/topics`);
-      const data = await response.json();
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseErr) {
+        setTopics([]);
+        setSelectedTopic('');
+        setError('Respuesta inválida del backend.');
+        console.error('Respuesta no es JSON:', text);
+        return;
+      }
       if (data.success && Array.isArray(data.topics) && data.topics.length > 0) {
         setTopics(data.topics);
         setSelectedTopic(data.topics[0]);
       } else {
         setTopics([]);
         setSelectedTopic('');
-        setError('No hay temas disponibles. Contacta al administrador.');
+        setError(`No hay temas disponibles. Respuesta: ${JSON.stringify(data)}`);
+        console.error('Respuesta inesperada:', data);
       }
     } catch (error) {
       setTopics([]);
       setSelectedTopic('');
-      setError('Error obteniendo temas. Verifica tu conexión.');
+      setError('Error obteniendo temas. Detalle consola.');
       console.error('Error fetching topics:', error);
     }
   };
 
   const fetchDifficultyLevels = async () => {
     try {
-      const apiBase = import.meta.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const response = await fetch(`${apiBase}/api/ai/difficulty-levels`);
       const data = await response.json();
       if (data.success) {
@@ -72,7 +83,7 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
     setError('');
 
     try {
-      const apiBase = import.meta.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const token = user && user.getIdToken ? await user.getIdToken() : null;
       const response = await fetch(`${apiBase}/api/ai/generate-questions`, {
         method: 'POST',
@@ -172,157 +183,182 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
           <h2>🤖 Generador de Preguntas</h2>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
-        {showManualForm ? (
-          <div>
+        {/* Selección de método de generación */}
+        {!showManualForm && !useAI && (
+          <div className="ai-generator-method-select">
+            <button className="btn btn-primary" onClick={() => setUseAI(true)} style={{ marginRight: 12, minWidth: 140, fontSize: '1.08rem', whiteSpace: 'nowrap' }}>
+              Crear con IA
+            </button>
+            <button className="btn btn-secondary" onClick={() => setShowManualForm(true)} style={{ minWidth: 140, fontSize: '1.08rem', whiteSpace: 'nowrap' }}>
+              Escribir preguntas
+            </button>
+          </div>
+        )}
+        {/* Formulario de generación con IA */}
+        {useAI && !showManualForm && (
+          <form className="ai-generator-form" onSubmit={async (e) => {
+            e.preventDefault();
+            setLoading(true);
+            setError('');
+            try {
+              await generateQuestions();
+              setError('');
+            } catch (err) {
+              setError('Error al generar preguntas. Por favor, inténtalo de nuevo.');
+            } finally {
+              setLoading(false);
+            }
+          }}>
+            <div className="form-group">
+              <label htmlFor="topic">Tema</label>
+              <select
+                id="topic"
+                className="form-select"
+                value={selectedTopic}
+                onChange={(e) => setSelectedTopic(e.target.value)}
+                disabled={topics.length === 0}
+              >
+                {topics.length === 0 ? (
+                  <option value="">No hay temas disponibles</option>
+                ) : (
+                  topics.map(topic => (
+                    <option key={topic} value={topic}>{topic}</option>
+                  ))
+                )}
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="difficulty">Dificultad</label>
+              <select
+                id="difficulty"
+                className="form-select"
+                value={selectedDifficulty}
+                onChange={(e) => setSelectedDifficulty(e.target.value)}
+              >
+                <option value="easy">Fácil</option>
+                <option value="medium">Media</option>
+                <option value="hard">Difícil</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="numQuestions">Cantidad de Preguntas</label>
+              <input
+                id="numQuestions"
+                className="form-input"
+                type="number"
+                min={1}
+                max={20}
+                value={questionCount}
+                onChange={(e) => setQuestionCount(Number(e.target.value))}
+                required
+              />
+            </div>
+            {error && <div className="error-message">{error}</div>}
+            <div className="ai-generator-actions">
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={loading}
+                style={{ minWidth: 140, fontSize: '1.08rem', whiteSpace: 'nowrap' }}
+              >
+                {loading ? 'Creando...' : 'Crear preguntas'}
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setUseAI(false)}
+                disabled={loading}
+                style={{ marginLeft: 8, minWidth: 100, fontSize: '1.08rem', whiteSpace: 'nowrap' }}
+              >
+                Atrás
+              </button>
+            </div>
+          </form>
+        )}
+        {/* Formulario manual */}
+        {showManualForm && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 380, padding: '32px 0 12px 0', animation: 'fadeIn .5s' }}>
             {manualStep === 0 ? (
-              <form onSubmit={e => { e.preventDefault(); setManualStep(1); setManualQuestions([]); setManualTopic(selectedTopic); }} style={{ marginBottom: 24 }}>
-                <h3>¿Cuántas preguntas manuales quieres crear?</h3>
-                <label>
-                  Tema:
-                  <select value={selectedTopic} onChange={e => setSelectedTopic(e.target.value)}>
-                    {topics.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </label>
-                <label style={{ marginLeft: 16 }}>
-                  Número:
-                  <input type="number" min={1} max={50} value={manualCount} onChange={e => setManualCount(Number(e.target.value))} style={{ width: 60, marginLeft: 8 }} />
-                </label>
-                <button type="submit" className="btn btn-primary" style={{ marginLeft: 16 }}>Comenzar</button>
-                <button type="button" className="btn btn-secondary" style={{ marginLeft: 8 }} onClick={() => setShowManualForm(false)}>Cancelar</button>
+              <form
+                className="manual-question-form"
+                style={{ maxWidth: 420, margin: '0 auto', marginBottom: 24, boxShadow: '0 8px 32px rgba(42,122,228,0.13)', background: 'rgba(26,26,46,0.97)', borderRadius: 24, padding: '36px 32px 28px 32px', border: '2.5px solid var(--bb-primary)', backdropFilter: 'blur(14px) saturate(1.2)' }}
+                onSubmit={e => { e.preventDefault(); setManualStep(1); setManualQuestions([]); setManualTopic(selectedTopic); }}
+              >
+                <h3 style={{ textAlign: 'center', marginBottom: 24, fontWeight: 900, fontSize: '1.35rem', letterSpacing: 1.2, color: 'var(--bb-primary)', background: 'var(--bb-gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                  ¿Cuántas preguntas quieres agregar manualmente?
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+                  <label style={{ fontSize: '1.08rem', fontWeight: 600 }}>
+                    Tema:
+                    <select
+                      value={selectedTopic}
+                      onChange={e => setSelectedTopic(e.target.value)}
+                      style={{ marginLeft: 8, minWidth: 120, padding: '10px 16px', borderRadius: 10, fontSize: '1.08rem', border: '2px solid var(--bb-primary-light)', background: 'rgba(22,33,62,0.7)', color: 'var(--bb-text-primary)' }}
+                    >
+                      {topics.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </label>
+                  <label style={{ fontSize: '1.08rem', fontWeight: 600 }}>
+                    ¿Cuántas preguntas?
+                    <input
+                      type="number"
+                      min={1}
+                      max={50}
+                      value={manualCount}
+                      onChange={e => setManualCount(Number(e.target.value))}
+                      style={{ marginLeft: 8, width: 90, padding: '10px 16px', borderRadius: 10, fontSize: '1.08rem', border: '2px solid var(--bb-primary-light)', background: 'rgba(22,33,62,0.7)', color: 'var(--bb-text-primary)' }}
+                      required
+                    />
+                  </label>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 10 }}>
+                    <button type="submit" className="btn btn-primary" style={{ minWidth: 120, fontSize: '1.08rem' }}>Empezar</button>
+                    <button type="button" className="btn btn-secondary" style={{ minWidth: 120, fontSize: '1.08rem' }} onClick={() => setShowManualForm(false)}>Volver</button>
+                  </div>
+                </div>
               </form>
             ) : (
-              <ManualQuestionForm
-                topics={[manualTopic]}
-                onQuestionCreated={q => {
-                  const next = manualQuestions.concat([{ ...q, category: manualTopic }]);
-                  if (next.length < manualCount) {
-                    setManualQuestions(next);
-                    setManualStep(manualStep + 1);
-                  } else {
-                    // Guardar todas las preguntas en lote
-                    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-                    user.getIdToken().then(token => {
-                      fetch(`${apiBase}/api/questions/bulk`, {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          Authorization: `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ questions: next })
-                      })
-                        .then(res => res.json())
-                        .then(data => {
-                          setShowManualForm(false);
-                          setError('');
-                          setGeneratedQuestions(gqs => [...gqs, ...next]);
-                          onQuestionsGenerated && onQuestionsGenerated(next);
+              <div style={{ width: '100%', maxWidth: 650, margin: '0 auto', background: 'rgba(26,26,46,0.97)', borderRadius: 28, boxShadow: '0 8px 32px rgba(42,122,228,0.13)', border: '2.5px solid var(--bb-primary)', padding: '36px 32px 28px 32px', backdropFilter: 'blur(14px) saturate(1.2)', animation: 'fadeIn .5s' }}>
+                <div style={{ textAlign: 'center', marginBottom: 18, fontWeight: 900, fontSize: '1.25rem', letterSpacing: 1.1, color: 'var(--bb-primary)', background: 'var(--bb-gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                  ¡Vamos! Pregunta {manualQuestions.length + 1} de {manualCount}
+                </div>
+                <ManualQuestionForm
+                  topics={[manualTopic]}
+                  onQuestionCreated={q => {
+                    const next = manualQuestions.concat([{ ...q, category: manualTopic }]);
+                    if (next.length < manualCount) {
+                      setManualQuestions(next);
+                      setManualStep(manualStep + 1);
+                    } else {
+                      // Guardar todas las preguntas en lote
+                      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                      user.getIdToken().then(token => {
+                        fetch(`${apiBase}/api/questions/bulk`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`
+                          },
+                          body: JSON.stringify({ questions: next })
                         })
-                        .catch(() => {
-                          setError('Error guardando preguntas en Firestore');
-                          setShowManualForm(false);
-                        });
-                    });
-                  }
-                }}
-                onCancel={() => setShowManualForm(false)}
-              />
-            )}
-            {manualStep > 0 && manualStep <= manualCount && (
-              <div style={{ marginTop: 12, fontWeight: 'bold' }}>Pregunta {manualQuestions.length + 1} de {manualCount}</div>
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="ai-generator-content">
-              <div className="form-group">
-                <label>Tema:</label>
-                <select 
-                  value={selectedTopic} 
-                  onChange={(e) => setSelectedTopic(e.target.value)}
-                  className="form-select"
-                  disabled={topics.length === 0}
-                >
-                  {topics.length === 0 ? (
-                    <option value="">No hay temas disponibles</option>
-                  ) : (
-                    topics.map(topic => (
-                      <option key={topic} value={topic}>{topic}</option>
-                    ))
-                  )}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Dificultad:</label>
-                <select 
-                  value={selectedDifficulty} 
-                  onChange={(e) => setSelectedDifficulty(e.target.value)}
-                  className="form-select"
-                >
-                  {difficultyLevels.map(level => (
-                    <option key={level.value} value={level.value}>
-                      {level.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Cantidad de preguntas:</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="50"
-                  value={questionCount}
-                  onChange={(e) => setQuestionCount(parseInt(e.target.value))}
-                  className="form-input"
+                          .then(res => res.json())
+                          .then(data => {
+                            setShowManualForm(false);
+                            setError('');
+                            setGeneratedQuestions(gqs => [...gqs, ...next]);
+                            onQuestionsGenerated && onQuestionsGenerated(next);
+                          })
+                          .catch(() => {
+                            setError('Error guardando preguntas en Firestore');
+                            setShowManualForm(false);
+                          });
+                      });
+                    }
+                  }}
+                  onCancel={() => setShowManualForm(false)}
                 />
               </div>
-              <div className="form-group">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={useAI}
-                    onChange={(e) => setUseAI(e.target.checked)}
-                  />
-                  <span>Usar IA avanzada (requiere API key)</span>
-                </label>
-              </div>
-              {error && (
-                <div className="error-message">
-                  {error}
-                </div>
-              )}
-              <div className="ai-generator-actions">
-                <button 
-                  className="btn btn-secondary" 
-                  onClick={onClose}
-                  disabled={loading}
-                >
-                  Cancelar
-                </button>
-                <button 
-                  className="btn btn-primary" 
-                  onClick={generateQuestions}
-                  disabled={loading || topics.length === 0}
-                >
-                  {loading ? 'Generando...' : 'Generar Preguntas IA'}
-                </button>
-                <button
-                  className="btn btn-outline"
-                  type="button"
-                  onClick={() => setShowManualForm(true)}
-                  disabled={loading || topics.length === 0}
-                  style={{ marginLeft: 8 }}
-                >
-                  Escribir pregunta manual
-                </button>
-              </div>
-            </div>
-            <div className="ai-generator-info">
-              <p>💡 <strong>Tip:</strong> Puedes generar preguntas con IA o escribirlas manualmente.</p>
-              <p>🎯 <strong>Dificultad:</strong> Fácil, Medio, Difícil</p>
-              <p>📚 <strong>Temas disponibles:</strong> {topics.length} temas diferentes</p>
-            </div>
-          </>
+            )}
+          </div>
         )}
       </div>
     </div>
