@@ -21,7 +21,7 @@ export default function DashboardPage() {
 
   const fetchPublicGames = async () => {
     try {
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const apiBase = import.meta.env.REACT_APP_API_URL || 'http://localhost:5000';
       const response = await fetch(`${apiBase}/api/games`);
       const data = await response.json();
       const gamesArray = Array.isArray(data) ? data : [];

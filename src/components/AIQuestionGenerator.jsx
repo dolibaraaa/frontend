@@ -30,7 +30,7 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
 
   const fetchTopics = async () => {
     try {
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const apiBase = import.meta.env.REACT_APP_API_URL || 'http://localhost:5000';
       const response = await fetch(`${apiBase}/api/ai/topics`);
       const data = await response.json();
       if (data.success && Array.isArray(data.topics) && data.topics.length > 0) {
@@ -51,7 +51,7 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
 
   const fetchDifficultyLevels = async () => {
     try {
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const apiBase = import.meta.env.REACT_APP_API_URL || 'http://localhost:5000';
       const response = await fetch(`${apiBase}/api/ai/difficulty-levels`);
       const data = await response.json();
       if (data.success) {
@@ -72,7 +72,7 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
     setError('');
 
     try {
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const apiBase = import.meta.env.REACT_APP_API_URL || 'http://localhost:5000';
       const token = user && user.getIdToken ? await user.getIdToken() : null;
       const response = await fetch(`${apiBase}/api/ai/generate-questions`, {
         method: 'POST',
