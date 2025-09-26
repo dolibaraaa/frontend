@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 function MenuIcon({ open }) {
   return (
@@ -13,6 +13,8 @@ function MenuIcon({ open }) {
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
+  const location = useLocation()
+  const isHome = location.pathname === '/'
 
   return (
     <header className="bg-transparent backdrop-blur-md border-white/10 border-b w-full">
@@ -23,9 +25,9 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-4">
-          <Link to="/" className="text-sm hover:underline">Inicio</Link>
+          {!isHome && <Link to="/" className="text-sm hover:underline">Inicio</Link>}
           <Link to="/dashboard" className="text-sm hover:underline">Panel</Link>
-          <Link to="/ranking" className="text-sm hover:underline">Ranking</Link>
+          {!isHome && <Link to="/ranking" className="text-sm hover:underline">Ranking</Link>}
           <Link to="/login" className="bg-bb-primary px-3 py-2 rounded-md text-sm">Iniciar</Link>
         </nav>
 
@@ -41,9 +43,9 @@ export default function Navbar() {
       {/* Mobile drawer */}
       <div className={`md:hidden bg-bb-bg-primary/95 border-t border-white/5 transition-max-h duration-300 overflow-hidden ${open ? 'max-h-60' : 'max-h-0'}`}>
         <div className="flex flex-col gap-3 px-4 py-4">
-          <Link to="/" className="px-3 py-2 rounded-md">Inicio</Link>
+          {!isHome && <Link to="/" className="px-3 py-2 rounded-md">Inicio</Link>}
           <Link to="/dashboard" className="px-3 py-2 rounded-md">Panel</Link>
-          <Link to="/ranking" className="px-3 py-2 rounded-md">Ranking</Link>
+          {!isHome && <Link to="/ranking" className="px-3 py-2 rounded-md">Ranking</Link>}
           <Link to="/login" className="bg-bb-primary px-3 py-2 rounded-md text-white">Iniciar</Link>
         </div>
       </div>
