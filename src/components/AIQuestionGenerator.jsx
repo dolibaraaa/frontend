@@ -11,10 +11,11 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
   const [difficultyLevels, setDifficultyLevels] = useState([]);
   const [selectedTopic, setSelectedTopic] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('medium');
+  const questionCountOptions = [3, 5, 7, 10];
   const [questionCount, setQuestionCount] = useState(5);
   const [useAI, setUseAI] = useState(false);
   const [showManualForm, setShowManualForm] = useState(false);
-  const [manualCount, setManualCount] = useState(1);
+  const [manualCount, setManualCount] = useState(3);
   const [manualStep, setManualStep] = useState(0);
   const [manualQuestions, setManualQuestions] = useState([]);
   const [manualTopic, setManualTopic] = useState('');
@@ -245,11 +246,26 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
               <input
                 id="numQuestions"
                 className="form-input"
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 min={1}
                 max={20}
                 value={questionCount}
-                onChange={(e) => setQuestionCount(Number(e.target.value))}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, '');
+                  if (value === '' || (Number(value) >= 1 && Number(value) <= 20)) {
+                    setQuestionCount(value === '' ? '' : Number(value));
+                  }
+                }}
+                onBlur={(e) => {
+                  const num = Number(e.target.value);
+                  if (e.target.value === '' || num < 1) {
+                    setQuestionCount(1);
+                  } else if (num > 20) {
+                    setQuestionCount(20);
+                  }
+                }}
                 required
               />
             </div>
@@ -300,15 +316,16 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
                   </label>
                   <label style={{ fontSize: '1.08rem', fontWeight: 600 }}>
                     ¿Cuántas preguntas?
-                    <input
-                      type="number"
-                      min={1}
-                      max={50}
+                    <select
                       value={manualCount}
                       onChange={e => setManualCount(Number(e.target.value))}
-                      style={{ marginLeft: 8, width: 90, padding: '10px 16px', borderRadius: 10, fontSize: '1.08rem', border: '2px solid var(--bb-primary-light)', background: 'rgba(22,33,62,0.7)', color: 'var(--bb-text-primary)' }}
+                      style={{ marginLeft: 8, minWidth: 120, padding: '10px 16px', borderRadius: 10, fontSize: '1.08rem', border: '2px solid var(--bb-primary-light)', background: 'rgba(22,33,62,0.7)', color: 'var(--bb-text-primary)' }}
                       required
-                    />
+                    >
+                      {questionCountOptions.map(num => (
+                        <option key={num} value={num}>{num}</option>
+                      ))}
+                    </select>
                   </label>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 10 }}>
                     <button type="submit" className="btn btn-primary" style={{ minWidth: 120, fontSize: '1.08rem' }}>Empezar</button>

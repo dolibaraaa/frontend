@@ -1,34 +1,60 @@
 /* Modern BrainBlitz Theme- Inspired by gaming aesthetics */
+/* Mobile-first breakpoints */
 :root {
-  /* Primary Colors */
-  --bb-primary: #6366f1;
-  --bb-primary-dark: #4f46e5;
-  --bb-primary-light: #818cf8;
+  /* Breakpoints */
+  --bb-mobile: 320px;
+  --bb-tablet: 768px;
+  --bb-desktop: 1024px;
+  --bb-large: 1440px;
+
+  /* Responsive Spacing */
+  --bb-spacing-mobile: clamp(0.5rem, 2vw, 1rem);
+  --bb-spacing-base: clamp(1rem, 3vw, 2rem);
+  --bb-spacing-large: clamp(2rem, 5vw, 4rem);
+
+  /* Responsive Typography */
+  --bb-font-size-base: clamp(16px, 1rem + 0.5vw, 18px);
+  --bb-font-size-lg: clamp(18px, 1.25rem + 0.5vw, 24px);
+  --bb-font-size-xl: clamp(24px, 2rem + 1vw, 36px);
+  --bb-font-size-2xl: clamp(32px, 2.5rem + 1.5vw, 48px);
+
+  /* Primary Colors - Enhanced Gaming Theme */
+  --bb-primary: #7C3AED; /* Rich purple */
+  --bb-primary-dark: #5B21B6;
+  --bb-primary-light: #A78BFA;
   
-  /* Secondary Colors */
-  --bb-secondary: #ec4899;
-  --bb-secondary-dark: #db2777;
-  --bb-secondary-light: #f472b6;
+  /* Secondary Colors - Enhanced Energy */
+  --bb-secondary: #F59E0B; /* Vibrant amber */
+  --bb-secondary-dark: #D97706;
+  --bb-secondary-light: #FCD34D;
   
-  /* Accent Colors */
-  --bb-accent: #06b6d4;
-  --bb-accent-dark: #0891b2;
-  --bb-accent-light: #22d3ee;
+  /* Accent Colors - Cyber Feel */
+  --bb-accent: #10B981; /* Fresh emerald */
+  --bb-accent-dark: #059669;
+  --bb-accent-light: #34D399;
+      min-height: 56px;
   
   /* Success/Warning/Error */
   --bb-success: #10b981;
   --bb-warning: #f59e0b;
   --bb-error: #ef4444;
   
-  /* Backgrounds */
-  --bb-bg-primary: #0f0f23;
-  --bb-bg-secondary: #1a1a2e;
-  --bb-bg-tertiary: #16213e;
-  --bb-surface: rgba(255, 255, 255, 0.05);
-  --bb-surface-hover: rgba(255, 255, 255, 0.1);
+  /* Backgrounds - Deep Space Gaming Theme */
+  --bb-bg-primary: #0F172A; /* Slate 900 */
+  --bb-bg-secondary: #1E293B; /* Slate 800 */
+  --bb-bg-tertiary: #334155; /* Slate 700 */
+  --bb-surface: rgba(255, 255, 255, 0.08);
+  --bb-surface-hover: rgba(255, 255, 255, 0.12);
   
   /* Text Colors */
+      min-height: 48px;
+      min-width: 48px;
   --bb-text-primary: #ffffff;
+    .btn-large {
+      padding: 0.75rem 1.25rem;
+      font-size: 0.95rem;
+      min-height: 52px;
+    }
   --bb-text-secondary: rgba(255, 255, 255, 0.8);
   --bb-text-muted: rgba(255, 255, 255, 0.6);
   
@@ -48,10 +74,79 @@
   /* Animations */
   --bb-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --bb-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Card & Container Styles */
+  --bb-card-bg: linear-gradient(145deg, var(--bb-bg-secondary), var(--bb-bg-tertiary));
+  --bb-glass-effect: backdrop-filter: blur(12px) saturate(180%);
+  
+  /* Button Styles */
+  --bb-btn-gradient: linear-gradient(135deg, var(--bb-primary) 0%, var(--bb-accent) 100%);
+  --bb-btn-hover-gradient: linear-gradient(135deg, var(--bb-primary-dark) 0%, var(--bb-accent-dark) 100%);
+  
+  /* Gaming Elements */
+  --bb-glow-effect: 0 0 15px var(--bb-primary);
+  --bb-neon-text-shadow: 0 0 10px var(--bb-primary), 0 0 20px var(--bb-primary-light);
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Modern Card Styles */
+.bb-card {
+  background: var(--bb-card-bg);
+  border: 1px solid var(--bb-border);
+  border-radius: 12px;
+  box-shadow: var(--bb-shadow-md);
+  transition: var(--bb-transition);
+}
+
+.bb-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--bb-shadow-lg);
+}
+
+/* Glass Effect Container */
+.bb-glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+/* Modern Button Styles */
+.bb-button {
+  background: var(--bb-btn-gradient);
+  border: none;
+  border-radius: 8px;
+  color: var(--bb-text-primary);
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  transition: var(--bb-transition);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.bb-button:hover {
+  background: var(--bb-btn-hover-gradient);
+  transform: translateY(-1px);
+  box-shadow: var(--bb-shadow-md);
+}
+
+.bb-button:active {
+  transform: translateY(1px);
+}
+
+/* Gaming Element Styles */
+.bb-glow {
+  box-shadow: var(--bb-glow-effect);
+}
+
+.bb-neon-text {
+  text-shadow: var(--bb-neon-text-shadow);
+  color: var(--bb-text-primary);
+  font-weight: bold;
 }
 
 
@@ -62,9 +157,10 @@ html, body, #root {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   background: var(--bb-bg-primary);
   background-image: 
-    radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
+    radial-gradient(circle at 20% 80%, rgba(124, 58, 237, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(245, 158, 11, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.12) 0%, transparent 50%);
+  background-attachment: fixed;
   color: var(--bb-text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -114,7 +210,7 @@ p {
 .btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  /* transform eliminado para evitar problemas de clic */
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
   border: none;
@@ -142,32 +238,13 @@ p {
   }
 }
 
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
-}
-
-.btn:hover::before {
-  left: 100%;
-}
 
 .btn-primary {
   background: var(--bb-gradient-primary);
   color: white;
   box-shadow: var(--bb-shadow-md);
+  /* transform eliminado para evitar problemas de clic */
 }
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--bb-shadow-lg);
-}
-
 .btn-secondary {
   background: var(--bb-gradient-surface);
   color: var(--bb-text-primary);

@@ -166,8 +166,8 @@ export default function DashboardPage() {
               >
                 🤖 Generar preguntas
               </button>
-              <div style={{marginTop: 8, color: '#555', fontSize: 14}}>
-                <strong>Ayuda:</strong> Antes de crear una partida, puedes generar preguntas automáticamente o agregar preguntas manuales personalizadas. Así tu juego tendrá contenido único, reciente y adaptado a tus necesidades.
+              <div className="help-text">
+                <strong>💡 Ayuda:</strong> Antes de crear una partida, puedes generar preguntas automáticamente o agregar preguntas manuales personalizadas. Así tu juego tendrá contenido único, reciente y adaptado a tus necesidades.
               </div>
             </div>
           </div>

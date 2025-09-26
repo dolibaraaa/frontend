@@ -4,42 +4,65 @@
   color: var(--bb-text-primary);
   font-family: 'Inter', 'Arial', sans-serif;
   background-image:
-    radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.13) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.13) 0%, transparent 50%),
-    radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.08) 0%, transparent 50%);
+    radial-gradient(circle at 20% 80%, rgba(124, 58, 237, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(245, 158, 11, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.12) 0%, transparent 50%);
+  background-attachment: fixed;
+  position: relative;
   display: grid;
   grid-template-areas: 
-    "header header"
-    "main sidebar";
-  grid-template-columns: 1fr 300px;
-  grid-template-rows: auto 1fr;
-  gap: 1rem;
-  padding: 1rem;
+    "header"
+    "main"
+    "sidebar";
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--bb-spacing-mobile);
+  padding: var(--bb-spacing-mobile);
+}
+
+@media (min-width: 768px) {
+  .game-page {
+    grid-template-areas: 
+      "header header"
+      "main sidebar";
+    grid-template-columns: 1fr 300px;
+    grid-template-rows: auto 1fr;
+    gap: var(--bb-spacing-base);
+    padding: var(--bb-spacing-base);
+  }
 }
 
 .game-header {
-  grid-area: header;
-  background: rgba(26,26,46,0.85);
-  backdrop-filter: blur(14px);
-  border-radius: 22px;
-  border: 2.5px solid var(--bb-primary);
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.game-info h2 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.8rem;
-}
-
-.progress-info {
-  display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  align-items: stretch;
+  padding: var(--bb-spacing-mobile);
+  border-radius: clamp(12px, 3vw, 14px);
+  font-size: var(--bb-font-size-base);
 }
 
+.progress-bar {
+  width: clamp(80px, 15vw, 120px);
+  height: 6px;
+}
+
+.question-text {
+  font-size: var(--bb-font-size-lg);
+  margin-bottom: var(--bb-spacing-mobile);
+}
+    .options-container {
+      grid-template-columns: 1fr;
+      gap: 0.7rem;
+    }
+    .option-btn {
+      padding: 0.7rem;
+      font-size: 0.95rem;
+      border-radius: 10px;
+    }
+    .option-letter {
+      width: 28px;
+      height: 28px;
+      font-size: 0.95rem;
+    }
 .question-counter {
   font-size: 1rem;
   opacity: 0.9;
@@ -48,16 +71,50 @@
 .progress-bar {
   width: 200px;
   height: 8px;
-  background: var(--bb-bg-secondary);
-  border-radius: 4px;
+  background: rgba(124, 58, 237, 0.1);
+  border-radius: 8px;
   overflow: hidden;
+  position: relative;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.2),
+    0 0 10px rgba(124, 58, 237, 0.2);
 }
 
 .progress-fill {
   height: 100%;
-  background: var(--bb-gradient-primary);
-  border-radius: 4px;
-  transition: width 0.3s ease;
+  background: linear-gradient(90deg,
+    var(--bb-primary),
+    var(--bb-accent)
+  );
+  border-radius: 8px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: progressShine 1.5s infinite;
+}
+
+@keyframes progressShine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .player-rank {
@@ -78,14 +135,44 @@
 
 .game-main {
   grid-area: main;
-  background: rgba(26,26,46,0.85);
+  background: linear-gradient(135deg, 
+    rgba(124, 58, 237, 0.1),
+    rgba(245, 158, 11, 0.1)
+  );
   backdrop-filter: blur(14px);
   border-radius: 22px;
-  border: 2.5px solid var(--bb-primary-light);
+  border: 2px solid rgba(124, 58, 237, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   padding: 2rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.game-main::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg,
+    transparent,
+    rgba(124, 58, 237, 0.1),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .question-container {
