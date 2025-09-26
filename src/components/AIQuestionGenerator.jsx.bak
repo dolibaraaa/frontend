@@ -16,16 +16,8 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
   const [questionCount, setQuestionCount] = useState(5);
   const [useAI, setUseAI] = useState(false);
   const [showManualForm, setShowManualForm] = useState(false);
-  const [manualCount, setManualCount] = useState(3);
-  const [manualStep, setManualStep] = useState(0);
   const [manualQuestions, setManualQuestions] = useState([]);
-  const [manualTopic, setManualTopic] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  // Debug log para monitorear cambios en showManualForm
-  useEffect(() => {
-    console.log('showManualForm cambió a:', showManualForm);
-  }, [showManualForm]);
   const [error, setError] = useState('');
   const [generatedQuestions, setGeneratedQuestions] = useState([]);
   const [canCreateGame, setCanCreateGame] = useState(false);
@@ -283,45 +275,7 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
         {/* Formulario manual */}
         {showManualForm && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 380, padding: '32px 0 12px 0', animation: 'fadeIn .5s' }}>
-            {manualStep === 0 ? (
-              <form
-                className="manual-question-form"
-                style={{ maxWidth: 420, margin: '0 auto', marginBottom: 24, boxShadow: '0 8px 32px rgba(42,122,228,0.13)', background: 'rgba(26,26,46,0.97)', borderRadius: 24, padding: '36px 32px 28px 32px', border: '2.5px solid var(--bb-primary)', backdropFilter: 'blur(14px) saturate(1.2)' }}
-                onSubmit={e => { e.preventDefault(); setManualStep(1); setManualQuestions([]); setManualTopic(selectedTopic); }}
-              >
-                <h3 style={{ textAlign: 'center', marginBottom: 24, fontWeight: 900, fontSize: '1.35rem', letterSpacing: 1.2, color: 'var(--bb-primary)', background: 'var(--bb-gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                  ¿Cuántas preguntas quieres agregar manualmente?
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-                  <label style={{ fontSize: '1.08rem', fontWeight: 600 }}>
-                    Tema:
-                    <select
-                      value={selectedTopic}
-                      onChange={e => setSelectedTopic(e.target.value)}
-                      style={{ marginLeft: 8, minWidth: 120, padding: '10px 16px', borderRadius: 10, fontSize: '1.08rem', border: '2px solid var(--bb-primary-light)', background: 'rgba(22,33,62,0.7)', color: 'var(--bb-text-primary)' }}
-                    >
-                      {topics.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </label>
-                  <label style={{ fontSize: '1.08rem', fontWeight: 600 }}>
-                    ¿Cuántas preguntas?
-                    <input
-                      type="number"
-                      value={manualCount}
-                      onChange={e => setManualCount(Math.min(Math.max(1, parseInt(e.target.value) || 1), 20))}
-                      style={{ marginLeft: 8, width: 80, padding: '10px 16px', borderRadius: 10, fontSize: '1.08rem', border: '2px solid var(--bb-primary-light)', background: 'rgba(22,33,62,0.7)', color: 'var(--bb-text-primary)' }}
-                      min="1"
-                      max="20"
-                      required
-                    />
-                  </label>
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 10 }}>
-                    <button type="submit" className="btn btn-primary" style={{ minWidth: 120, fontSize: '1.08rem' }}>Empezar</button>
-                    <button type="button" className="btn btn-secondary" style={{ minWidth: 120, fontSize: '1.08rem' }} onClick={() => setShowManualForm(false)}>Volver</button>
-                  </div>
-                </div>
-              </form>
-            ) : (
+            {
               <div style={{ width: '100%', maxWidth: 650, margin: '0 auto', background: 'rgba(26,26,46,0.97)', borderRadius: 28, boxShadow: '0 8px 32px rgba(42,122,228,0.13)', border: '2.5px solid var(--bb-primary)', padding: '36px 32px 28px 32px', backdropFilter: 'blur(14px) saturate(1.2)', animation: 'fadeIn .5s' }}>
                 <div style={{ textAlign: 'center', marginBottom: 18, fontWeight: 900, fontSize: '1.25rem', letterSpacing: 1.1, color: 'var(--bb-primary)', background: 'var(--bb-gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                   ¡Vamos! Pregunta {manualQuestions.length + 1} de {manualCount}

@@ -1,54 +1,70 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../AuthContext';
 import './ManualQuestionForm.css';
+import './common.css';
 
 const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
   const { user } = useAuth();
-  const [question, setQuestion] = useState('');
-  const [options, setOptions] = useState(['', '', '', '']);
-  const [correctIndex, setCorrectIndex] = useState(0);
-  const [selectedTopic, setSelectedTopic] = useState(topics[0] || '');
+  const [formData, setFormData] = useState({
+    question: '',
+    options: ['', '', '', ''],
+    correctIndex: 0,
+    selectedTopic: topics[0] || ''
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleOptionChange = (idx, value) => {
-    const newOptions = [...options];
-    newOptions[idx] = value;
-    setOptions(newOptions);
+    setFormData(prev => ({
+      ...prev,
+      options: prev.options.map((opt, i) => i === idx ? value : opt)
+    }));
   };
+
+  const validateForm = () => {
+    if (!formData.question.trim()) {
+      return 'La pregunta es requerida';
+    }
+    if (formData.options.some(opt => !opt.trim())) {
+      return 'Todas las opciones son requeridas';
+    }
+    if (!user?.getIdToken) {
+      return 'Debes iniciar sesión para crear preguntas';
+    }
+    return '';
+  };
+
+  useEffect(() => {
+    const validationError = validateForm();
+    setError(validationError);
+  }, [formData, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
-    // Validaciones
-    if (!question.trim() || options.some(opt => !opt.trim())) {
-      setError('Completa la pregunta y todas las opciones.');
-      return;
-    }
-
-    // Validar autenticación
-    if (!user || !user.getIdToken) {
-      setError('Debes iniciar sesión para crear preguntas.');
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
     setLoading(true);
-    try {
-  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    setError('');
+    setSuccessMessage('');
 
-      // Obtener token del usuario autenticado
-      let token = await user.getIdToken();
+    try {
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const token = await user.getIdToken();
 
       const payload = {
-        text: question,
-        options,
-        correctAnswerIndex: correctIndex,
-        category: selectedTopic,
+        text: formData.question,
+        options: formData.options,
+        correctAnswerIndex: formData.correctIndex,
+        category: formData.selectedTopic,
         explanation: ''
       };
 
-      const res = await fetch(`${apiBase}/api/questions`, {
+      const response = await fetch(`${apiBase}/api/questions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,18 +73,20 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
         body: JSON.stringify(payload)
       });
 
-      const data = await res.json();
+      const data = await response.json();
 
-      if (res.ok && data.success !== false) {
-        // ✅ Llamar al callback para notificar que la pregunta fue creada
-        onQuestionCreated && onQuestionCreated(
-          data.question || { question, options, correctAnswerIndex: correctIndex, category: selectedTopic }
-        );
-      } else {
-        setError(data.error || 'Error al guardar la pregunta');
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al guardar la pregunta');
+      }
+
+      setSuccessMessage('¡Pregunta guardada correctamente!');
+      
+      if (onQuestionCreated) {
+        onQuestionCreated(data.question || { ...payload });
       }
     } catch (err) {
-      setError('Error de conexión');
+      console.error('Error al guardar la pregunta:', err);
+      setError(err.message || 'Error de conexión');
     } finally {
       setLoading(false);
     }
@@ -76,54 +94,85 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
 
   return (
     <form className="manual-question-form" onSubmit={handleSubmit}>
-  <h3>Escribe tu pregunta</h3>
-      <label>
-        Tema:
-        <select value={selectedTopic} onChange={e => setSelectedTopic(e.target.value)}>
-          {topics.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
-      </label>
-      <label>
-        Pregunta:
-        <input
-          type="text"
-          value={question}
-          onChange={e => setQuestion(e.target.value)}
-          required
-        />
-      </label>
-      <div>
-        Opciones:
+      <h3>Escribe tu pregunta</h3>
+      
+      {error && <div className="error-message">{error}</div>}
+      {successMessage && <div className="success-message">{successMessage}</div>}
+      
+      <div className={`form-group ${loading ? 'disabled' : ''}`}>
+        <label>
+          Tema:
+          <select 
+            value={formData.selectedTopic} 
+            onChange={e => setFormData(prev => ({ ...prev, selectedTopic: e.target.value }))}
+            disabled={loading}
+          >
+            {topics.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </label>
+      </div>
+
+      <div className={`form-group ${loading ? 'disabled' : ''}`}>
+        <label>
+          Pregunta:
+          <input
+            type="text"
+            value={formData.question}
+            onChange={e => setFormData(prev => ({ ...prev, question: e.target.value }))}
+            disabled={loading}
+            required
+          />
+        </label>
+      </div>
+
+      <div className={`form-group ${loading ? 'disabled' : ''}`}>
+        <label>Opciones:</label>
         <div className="manual-options-list">
-          {options.map((opt, idx) => (
+          {formData.options.map((opt, idx) => (
             <div key={idx} className="manual-option-row">
               <input
                 type="text"
                 value={opt}
                 onChange={e => handleOptionChange(idx, e.target.value)}
+                disabled={loading}
                 required
                 placeholder={`Opción ${idx + 1}`}
               />
-              <label>
+              <label className="radio-label">
                 <input
                   type="radio"
                   name="correctOption"
-                  checked={correctIndex === idx}
-                  onChange={() => setCorrectIndex(idx)}
+                  checked={formData.correctIndex === idx}
+                  onChange={() => setFormData(prev => ({ ...prev, correctIndex: idx }))}
+                  disabled={loading}
                 />
-                Correcta
+                <span>Correcta</span>
               </label>
             </div>
           ))}
         </div>
       </div>
-      {error && <div className="error-message">{error}</div>}
+
       <div className="manual-question-actions">
-          <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={loading} style={{ minWidth: 100, fontSize: '1.08rem', whiteSpace: 'nowrap' }}>
-            Atrás
+        <button 
+          type="submit" 
+          className="btn btn-primary" 
+          disabled={loading || !!error}
+        >
+          {loading ? (
+            <>
+              <div className="loading-indicator" />
+              <span style={{ marginLeft: '8px' }}>Guardando...</span>
+            </>
+          ) : 'Guardar'}
         </button>
-          <button type="submit" className="btn btn-primary" disabled={loading} style={{ minWidth: 140, fontSize: '1.08rem', whiteSpace: 'nowrap' }}>
-            {loading ? 'Guardando...' : 'Guardar'}
+        <button 
+          type="button" 
+          className="btn btn-secondary" 
+          onClick={onCancel} 
+          disabled={loading}
+        >
+          Atrás
         </button>
       </div>
     </form>

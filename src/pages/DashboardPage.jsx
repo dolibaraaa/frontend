@@ -131,7 +131,7 @@ export default function DashboardPage() {
             <button onClick={() => navigate('/profile')} className="btn btn-secondary">
               Perfil
             </button>
-            <button onClick={logout} className="btn btn-outline">
+            <button onClick={logout} className="btn-outline btn">
               Cerrar sesión
             </button>
           </div>
