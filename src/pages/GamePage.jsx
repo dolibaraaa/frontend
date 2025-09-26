@@ -92,11 +92,12 @@ export default function GamePage() {
     return () => {
       (async () => {
         const socket = await getSocket();
-        socket.off('connect', onConnect);
-        socket.off('newQuestion', onNewQuestion);
-        socket.off('answerResult', onAnswerResult);
-        socket.off('gameFinished', onGameFinished);
-        socket.off('gameStarted', onGameStarted);
+        // remove all listeners for these events (handlers were defined inside setup)
+        socket.off('connect');
+        socket.off('newQuestion');
+        socket.off('answerResult');
+        socket.off('gameFinished');
+        socket.off('gameStarted');
       })();
     };
   }, [user, gameId, navigate]);
