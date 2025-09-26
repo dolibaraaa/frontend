@@ -40,7 +40,15 @@ export default function ProfilePage() {
     fetchProfile();
   }, [user]);
 
-  if (loading) return null;
+  if (loading) return (
+    <div className="profile-container">
+      <div className="profile-card">
+        <div className="profile-header">
+          <div className="profile-loading">Cargando perfil...</div>
+        </div>
+      </div>
+    </div>
+  );
   return (
     <div className="profile-container">
       <div className="profile-card">

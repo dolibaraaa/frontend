@@ -17,7 +17,6 @@ export default function HomePage() {
           {user ? (
             <>
               <Link to="/dashboard" className="bg-bb-primary px-5 py-3 rounded-md font-semibold text-sm">Ir al panel</Link>
-              <Link to="/profile" className="bg-white/5 px-5 py-3 rounded-md text-sm">Ver perfil</Link>
             </>
           ) : (
             <>
