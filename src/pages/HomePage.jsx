@@ -13,15 +13,15 @@ export default function HomePage() {
         <h1 className="mb-3 font-extrabold text-3xl md:text-5xl">⚡ BrainBlitz</h1>
         <p className="mb-6 text-white/80 text-sm md:text-lg">La experiencia definitiva de trivia multijugador</p>
 
-        <div className="flex sm:flex-row flex-col justify-center items-center gap-3">
+        <div className="flex sm:flex-row flex-col justify-center items-center gap-4">
           {user ? (
             <>
-              <Link to="/dashboard" className="bg-bb-primary px-5 py-3 rounded-md font-semibold text-sm">Ir al panel</Link>
+              <Link to="/dashboard" className="bg-bb-primary px-8 py-4 rounded-lg font-bold text-lg">Ir al panel</Link>
             </>
           ) : (
             <>
-              <Link to="/login" className="bg-bb-primary px-5 py-3 rounded-md font-semibold text-sm">Iniciar sesión</Link>
-              <Link to="/register" className="bg-white/5 px-5 py-3 rounded-md text-sm">Registrarse</Link>
+              <Link to="/login" className="bg-bb-primary px-8 py-4 rounded-lg font-bold text-lg">Iniciar sesión</Link>
+              <Link to="/register" className="bg-white/5 px-8 py-4 rounded-lg text-lg">Registrarse</Link>
             </>
           )}
         </div>
@@ -43,7 +43,7 @@ export default function HomePage() {
           <div className="bg-white/3 p-4 rounded-lg">
             <div className="mb-2 text-3xl">🏆</div>
             <h3 className="font-semibold">Competitivo</h3>
-            <p className="text-white/80 text-sm">Sigue tus estadísticas, sube en el ranking y sé el campeón de BrainBlitz</p>
+            <p className="text-white/80 text-sm">Sigue tus estadísticas y compite con amigos</p>
           </div>
         </div>
       </section>
