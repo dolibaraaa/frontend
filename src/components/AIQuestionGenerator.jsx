@@ -22,10 +22,7 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
   const [manualTopic, setManualTopic] = useState('');
   const [loading, setLoading] = useState(false);
   
-  // Debug log para monitorear cambios en showManualForm
-  useEffect(() => {
-    console.log('showManualForm cambió a:', showManualForm);
-  }, [showManualForm]);
+  // No necesitamos monitorear este cambio de estado
   const [error, setError] = useState('');
   const [generatedQuestions, setGeneratedQuestions] = useState([]);
   const [canCreateGame, setCanCreateGame] = useState(false);
@@ -52,8 +49,7 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
       const levels = await fetchDifficultyLevels();
       setDifficultyLevels(levels);
     } catch (error) {
-      console.error('Error loading difficulty levels:', error);
-      setError('Error cargando niveles de dificultad.');
+      setError('No se pudieron cargar los niveles de dificultad. Por favor, intenta de nuevo más tarde.');
     }
   };
 
@@ -67,7 +63,11 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
     setError('');
 
     try {
-  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const apiBase = import.meta.env.VITE_API_URL;
+      if (!apiBase) {
+        setError('Error de configuración: URL del API no definida');
+        return;
+      }
       const token = user && user.getIdToken ? await user.getIdToken() : null;
       const response = await fetch(`${apiBase}/api/ai/generate-questions`, {
         method: 'POST',
@@ -84,7 +84,6 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
       });
 
       const data = await response.json();
-      console.log('Respuesta de /api/ai/generate-questions:', data);
       if (data.success) {
         // Guardar preguntas en Firestore y esperar confirmación exitosa antes de crear la partida
         const questionsWithMeta = data.questions.map(q => ({
@@ -125,13 +124,12 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
           const result = await response.json();
           if (!result.success) {
             setError((prev) => (prev ? prev + ' | ' : '') + (result.error || 'Error guardando preguntas en Firestore'));
-            console.error('Error guardando preguntas en Firestore:', result.error);
+            setError('No se pudieron guardar las preguntas. ' + (result.error || 'Por favor, intenta de nuevo.'));
           } else {
             saveOk = true;
           }
         } catch (e) {
-          setError((prev) => (prev ? prev + ' | ' : '') + 'Error guardando preguntas en Firestore');
-          console.error('Error guardando preguntas en Firestore:', e);
+          setError('Ocurrió un error al guardar las preguntas. Por favor, verifica tu conexión e intenta de nuevo.');
         }
         if (!saveOk) {
           setLoading(false);
@@ -143,11 +141,10 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
         // No navegues ni cierres aquí, deja que el Dashboard controle el cierre
       } else {
         setError(data.error || 'Error generando preguntas');
-        console.error('Error generando preguntas:', data.error);
+        setError('No se pudieron generar las preguntas: ' + (data.error || 'Por favor, intenta de nuevo.'));
       }
     } catch (error) {
-      setError('Error de conexión. Intenta nuevamente.');
-      console.error('Error generating questions:', error);
+      setError('Error de conexión. Por favor, verifica tu conexión a internet e intenta nuevamente.');
     } finally {
       setLoading(false);
     }
@@ -186,7 +183,7 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
                 setUseAI(false);
                 setManualStep(0);
                 setManualQuestions([]);
-                console.log('Activando modo manual');
+                // Activando modo manual sin necesidad de log
               }} 
               style={{ minWidth: 140, fontSize: '1.08rem', whiteSpace: 'nowrap' }}
             >
@@ -337,7 +334,11 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
                       
                       // Si es la última pregunta
                       if (next.length === manualCount) {
-                        const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+                        const apiBase = import.meta.env.VITE_API_URL;
+                        if (!apiBase) {
+                          setError('Error de configuración: URL del API no definida');
+                          return;
+                        }
                         const token = await user.getIdToken();
                         
                         const response = await fetch(`${apiBase}/api/questions/bulk`, {
@@ -361,27 +362,27 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
                         }
 
                         // Mostrar mensaje de éxito y cerrar
-                        alert('¡Preguntas guardadas correctamente!');
-                        setShowManualForm(false);
+                        setError('¡Todas las preguntas han sido guardadas exitosamente!');
+                        setTimeout(() => {
+                          setShowManualForm(false);
+                          setError('');
+                        }, 1500);
                       } else {
                         // Si no es la última pregunta, actualizar el contador y continuar
                         setManualQuestions(next);
                         setManualStep(manualStep + 1);
                         // Mostrar mensaje de progreso
-                        alert(`Pregunta ${next.length} de ${manualCount} guardada correctamente`);
+                        setError(`¡Pregunta ${next.length} de ${manualCount} guardada exitosamente!`);
+                        setTimeout(() => setError(''), 1500);
                       }
                     } catch (error) {
-                      console.error('Error al guardar las preguntas:', error);
-                      alert('Error: ' + (error.message || 'Error al guardar las preguntas'));
-                      setError(error.message || 'Error al guardar las preguntas');
+                      setError('No se pudo guardar la pregunta: ' + (error.message || 'Por favor, intenta de nuevo.'));
                     } finally {
                       setLoading(false);
                     }
                   }}
                   onCancel={() => {
-                    if (window.confirm('¿Estás seguro de que quieres cancelar? Se perderán las preguntas no guardadas.')) {
-                      setShowManualForm(false);
-                    }
+                    setShowManualForm(false);
                   }}
                 />
               </div>
