@@ -49,6 +49,8 @@ export default function ProfilePage() {
             src={`https://api.dicebear.com/7.x/identicon/svg?seed=${user?.uid || 'user'}`}
             alt="avatar"
             className="profile-avatar"
+            loading="lazy"
+            decoding="async"
           />
           <div>
             <h2>{user?.displayName || user?.email}</h2>

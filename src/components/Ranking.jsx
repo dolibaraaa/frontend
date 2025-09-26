@@ -23,19 +23,15 @@ export default function Ranking({ players }) {
   };
 
   return (
-    <div className="ranking">
-      <h3 className="ranking-title">🏆 Tabla de posiciones</h3>
-      <div className="players-list">
+    <div className="mx-auto w-full max-w-xl">
+      <h3 className="mb-4 font-bold text-xl">🏆 Tabla de posiciones</h3>
+      <div className="flex flex-col bg-white/3 rounded-md divide-y divide-white/5 overflow-hidden">
         {sortedPlayers.map((player, index) => (
-          <div key={player.uid} className={`player-item ${getRankClass(index)}`}>
-            <div className="player-rank">
-              <span className="rank-icon">{getRankIcon(index)}</span>
-            </div>
-            <div className="player-info">
-              <span className="player-name">
-                {player.displayName || player.email}
-              </span>
-              <span className="player-score">{player.score} puntos</span>
+          <div key={player.uid} className={`flex items-center gap-4 p-3 ${getRankClass(index)}`}>
+            <div className="flex justify-center items-center bg-white/5 rounded-full w-10 h-10 text-lg">{getRankIcon(index)}</div>
+            <div className="flex-1">
+              <div className="font-medium">{player.displayName || player.email}</div>
+              <div className="text-white/80 text-sm">{player.score} puntos</div>
             </div>
           </div>
         ))}

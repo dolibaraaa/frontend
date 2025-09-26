@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { socket } from '../services/socket';
+import { getSocket } from '../services/socket';
 const AIQuestionGenerator = React.lazy(() => import('../components/AIQuestionGenerator'));
 import './DashboardPage.css';
 
@@ -48,13 +48,14 @@ export default function DashboardPage() {
     // Forzar que todas las preguntas tengan el category igual al tema seleccionado
     const fixedQuestions = generatedQuestions.map(q => ({ ...q, category: selectedTopic }));
     setLoading(true);
-    socket.connect();
+  const socket = await getSocket();
+  socket.connect();
     // Obtener el token de autenticación del usuario
     let token = null;
     if (user && user.getIdToken) {
       token = await user.getIdToken();
     }
-    socket.emit('createGame', {
+  socket.emit('createGame', {
       hostId: user.uid,
       displayName: user.displayName || user.email,
       isPublic: true,
@@ -63,13 +64,13 @@ export default function DashboardPage() {
       questions: fixedQuestions,
       count: fixedQuestions.length
     });
-    socket.on('gameCreated', ({ gameId, questions }) => {
+  socket.on('gameCreated', ({ gameId, questions }) => {
       setLoading(false);
       setSuccessMessage(`¡Tu partida fue creada con ${questions?.length || 0} preguntas! Invita a tus amigos y disfruta. 🚀`);
       setTimeout(() => setSuccessMessage(''), 5000);
       setTimeout(() => navigate(`/lobby/${gameId}`), 1200);
     });
-    socket.on('error', ({ error }) => {
+  socket.on('error', ({ error }) => {
   setLoading(false);
   setErrorMessage('Ocurrió un error al crear la partida: ' + error);
   setTimeout(() => setErrorMessage(''), 5000);

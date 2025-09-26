@@ -1,0 +1,136 @@
+# CI/CD workflow for Vite + React project
+# Triggers on push and pull_request to 'main'
+# Runs lint, unit tests, build, performance (Lighthouse), E2E (Playwright), visual & a11y tests
+# If all checks pass, optionally push auto-changes and deploy to Vercel
+
+name: CI-CD - Tests & Deploy
+
+on:
+  push:
+    branches: [ 'main' ]
+  pull_request:
+    branches: [ 'main' ]
+
+# Prevent duplicate workflow runs on the same branch concurrently
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    # Do not expose secrets at job-level here. Steps that need secrets will reference them explicitly.
+
+    steps:
+      # 1) Checkout repository code
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # persist credentials so the workflow can push if ALLOW_AUTO_PUSH is enabled
+          persist-credentials: true
+
+      # 2) Use Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 3) Cache npm modules (actions/setup-node cache already used, this is extra fallback)
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # 4) Install dependencies (fast, deterministic install)
+      - name: Install dependencies
+        run: npm ci
+
+      # 5) Lint - catch style/quality issues early
+      - name: Lint
+        run: npm run lint
+
+      # 6) Run unit tests (Vitest / Jest) and generate coverage
+      - name: Unit tests
+        run: npm run test:unit
+
+      # 7) Build production artifacts (Vite)
+      - name: Build
+        run: npm run build
+
+      # 8) Install Playwright browsers (required for E2E & for LHCI Chromium)
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      # 9) Export Playwright Chromium path for LHCI
+      - name: Export Playwright Chromium path
+        run: |
+          node -e "const { chromium } = require('playwright'); console.log('CHROME=' + chromium.executablePath())" | sed 's/^/CHROME_PATH=/' >> $GITHUB_ENV || true
+
+      # 10) Run Lighthouse performance checks (LHCI)
+      - name: Run Lighthouse (LHCI)
+        run: |
+          npm install -g @lhci/cli@0.8 || true
+          # serve the built site on port 8080 in background
+          npx http-server ./dist -p 8080 --silent &
+          npx -y @lhci/cli@0.8 autorun --collect.url=http://localhost:8080 --upload.target=temporary-public-storage
+
+      # 10) Run Playwright E2E tests (this will start dev server per playwright.config.ts/webServer)
+      - name: Run Playwright E2E tests
+        run: npm run test:e2e
+
+      # 11) Run visual regression tests (Playwright snapshots / Percy integration)
+      - name: Visual tests
+        run: npm run test:visual
+
+      # 12) Accessibility checks (axe-playwright based tests)
+      - name: Accessibility (a11y) tests
+        run: npm run test:a11y
+
+      # 13) Upload test reports and artifacts for later inspection
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+
+      # Upload ESLint JSON report (if generated)
+      - name: Upload ESLint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-report
+          path: reports/eslint.json
+
+      # 14) Optional: push changes back to the repo (ONLY if explicitly enabled)
+      # Use this step to push things like auto-generated docs, snapshots, or version bumps.
+      - name: Auto-push generated changes (optional)
+        if: success()
+        run: |
+          # Only push if ALLOW_AUTO_PUSH secret is present and equals 'true'
+          if [ "${{ secrets.ALLOW_AUTO_PUSH }}" = "true" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore(ci): update generated artifacts [skip ci]" || echo "No changes to commit"
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "Auto-push disabled. Set secret ALLOW_AUTO_PUSH=true to enable."
+          fi
+      # 15) Deploy to Vercel (only when all previous steps finished successfully and Vercel token is set)
+      - name: Deploy to Vercel (via CLI)
+        if: success()
+        run: |
+          # Deploy only if VERCEL_TOKEN secret is available
+          if [ -n "${{ secrets.VERCEL_TOKEN }}" ]; then
+            npm i -g vercel
+            npx vercel --prod --confirm --token "${{ secrets.VERCEL_TOKEN }}"
+          else
+            echo "VERCEL_TOKEN not set - skipping Vercel deploy"
+          fi
+
+  # Optional: add a separate job to report results or notify teams (Slack, email) if needed

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { socket } from '../services/socket';
+import { getSocket, disconnectSocket } from '../services/socket';
 import './GameLobbyPage.css';
 
 export default function GameLobbyPage() {
@@ -16,38 +16,46 @@ export default function GameLobbyPage() {
   useEffect(() => {
     if (!user) return;
     
-    socket.connect();
-    socket.emit('joinGame', { 
-      gameId, 
-      uid: user.uid, 
-      displayName: user.displayName || user.email 
-    });
-    
-    socket.on('playerJoined', ({ players }) => {
-      setPlayers(players);
-      if (players.length > 0) setHostId(players[0].uid);
-    });
-    
-    socket.on('gameStarted', () => {
-      console.log('[GameLobbyPage] Evento gameStarted recibido, navegando a /game/' + gameId);
-      navigate(`/game/${gameId}`);
-    });
-    
-    socket.on('error', ({ error }) => {
-      setError(error);
-    });
+    (async () => {
+      if (!user) return;
+      const socket = await getSocket();
+      socket.connect();
+      socket.emit('joinGame', { 
+        gameId, 
+        uid: user.uid, 
+        displayName: user.displayName || user.email 
+      });
 
-    return () => {
-      socket.off('playerJoined');
-      socket.off('gameStarted');
-      socket.off('error');
-      socket.disconnect();
-    };
+      socket.on('playerJoined', ({ players }) => {
+        setPlayers(players);
+        if (players.length > 0) setHostId(players[0].uid);
+      });
+      
+      socket.on('gameStarted', () => {
+        console.log('[GameLobbyPage] Evento gameStarted recibido, navegando a /game/' + gameId);
+        navigate(`/game/${gameId}`);
+      });
+      
+      socket.on('error', ({ error }) => {
+        setError(error);
+      });
+
+      // cleanup
+      return () => {
+        socket.off('playerJoined');
+        socket.off('gameStarted');
+        socket.off('error');
+        disconnectSocket();
+      };
+    })();
   }, [gameId, user, navigate]);
 
   const handleStart = () => {
     console.log('[GameLobbyPage] Emitiendo startGame:', { gameId });
-    socket.emit('startGame', { gameId });
+    (async () => {
+      const socket = await getSocket();
+      socket.emit('startGame', { gameId });
+    })();
   };
 
   const copyGameCode = () => {

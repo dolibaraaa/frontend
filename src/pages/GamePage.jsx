@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { socket } from '../services/socket';
+import { getSocket } from '../services/socket';
 import Question from '../components/Question';
 import Timer from '../components/Timer';
 import Ranking from '../components/Ranking';
@@ -23,21 +23,28 @@ export default function GamePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Solicitar la primera pregunta al conectar
-    if (user && gameId) {
-      socket.emit('requestQuestion', { gameId });
-      console.log('[GamePage] Emitiendo requestQuestion:', { gameId });
-    }
+    (async () => {
+      const socket = await getSocket();
+      // Solicitar la primera pregunta al conectar
+      if (user && gameId) {
+        socket.emit('requestQuestion', { gameId });
+        console.log('[GamePage] Emitiendo requestQuestion:', { gameId });
+      }
+
+      // Si no llega pregunta en 5 segundos, mostrar error
+    })();
     // Si no llega pregunta en 5 segundos, mostrar error
     const timeout = setTimeout(() => {
       if (!question) setQuestionTimeout(true);
     }, 5000);
 
     if (!user) return;
-    if (!socket.connected) {
-      console.log('[GamePage] Intentando conectar socket...');
-      socket.connect();
-    }
+    const setup = async () => {
+      const socket = await getSocket();
+      if (!socket.connected) {
+        console.log('[GamePage] Intentando conectar socket...');
+        socket.connect();
+      }
     // Listeners nombrados para evitar duplicados
     function onConnect() {
       console.log('[GamePage] Socket conectado:', socket.id);
@@ -74,18 +81,23 @@ export default function GamePage() {
       setTotalQuestions(questionsCount);
     }
 
-    socket.on('connect', onConnect);
-    socket.on('newQuestion', onNewQuestion);
-    socket.on('answerResult', onAnswerResult);
-    socket.on('gameFinished', onGameFinished);
-    socket.on('gameStarted', onGameStarted);
+      socket.on('connect', onConnect);
+      socket.on('newQuestion', onNewQuestion);
+      socket.on('answerResult', onAnswerResult);
+      socket.on('gameFinished', onGameFinished);
+      socket.on('gameStarted', onGameStarted);
+    };
+    setup();
 
     return () => {
-      socket.off('connect', onConnect);
-      socket.off('newQuestion', onNewQuestion);
-      socket.off('answerResult', onAnswerResult);
-      socket.off('gameFinished', onGameFinished);
-      socket.off('gameStarted', onGameStarted);
+      (async () => {
+        const socket = await getSocket();
+        socket.off('connect', onConnect);
+        socket.off('newQuestion', onNewQuestion);
+        socket.off('answerResult', onAnswerResult);
+        socket.off('gameFinished', onGameFinished);
+        socket.off('gameStarted', onGameStarted);
+      })();
     };
   }, [user, gameId, navigate]);
 
@@ -94,12 +106,18 @@ export default function GamePage() {
     setSelected(idx);
     // Enviar también el valor de la opción seleccionada
     const answerValue = question && Array.isArray(question.options) ? question.options[idx] : undefined;
-    socket.emit('submitAnswer', { gameId, uid: user.uid, answerIndex: idx, answerValue });
+    (async () => {
+      const socket = await getSocket();
+      socket.emit('submitAnswer', { gameId, uid: user.uid, answerIndex: idx, answerValue });
+    })();
   }, [gameId, user, selected]);
 
   const handleTimerEnd = useCallback(() => {
     if (selected === null) {
-      socket.emit('submitAnswer', { gameId, uid: user.uid, answerIndex: null, answerValue: null });
+      (async () => {
+        const socket = await getSocket();
+        socket.emit('submitAnswer', { gameId, uid: user.uid, answerIndex: null, answerValue: null });
+      })();
     }
   }, [gameId, user, selected]);
 
