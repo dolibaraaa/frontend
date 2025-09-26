@@ -9,44 +9,48 @@ export default function HomePage() {
 
   return (
     <Layout>
-      <section className="mx-auto py-8 max-w-4xl text-center">
-        <h1 className="mb-3 font-extrabold text-3xl md:text-5xl">⚡ BrainBlitz</h1>
-        <p className="mb-6 text-white/80 text-sm md:text-lg">La experiencia definitiva de trivia multijugador</p>
+      <div className="home-page">
+        <section className="hero-section">
+          <div className="hero-section-content">
+            <h1 className="hero-title">⚡ BrainBlitz</h1>
+            <p className="hero-subtitle">La experiencia definitiva de trivia multijugador</p>
 
-        <div className="flex sm:flex-row flex-col justify-center items-center gap-4">
-          {user ? (
-            <>
-              <Link to="/dashboard" className="bg-bb-primary px-8 py-4 rounded-lg font-bold text-lg">Ir al panel</Link>
-            </>
-          ) : (
-            <>
-              <Link to="/login" className="bg-bb-primary px-8 py-4 rounded-lg font-bold text-lg">Iniciar sesión</Link>
-              <Link to="/register" className="bg-white/5 px-8 py-4 rounded-lg text-lg">Registrarse</Link>
-            </>
-          )}
-        </div>
-      </section>
+            <div className="auth-actions">
+              {user ? (
+                <Link to="/dashboard" className="bg-bb-primary px-8 py-4 rounded-lg font-bold text-lg">Ir al panel</Link>
+              ) : (
+                <>
+                  <Link to="/login" className="bg-bb-primary px-8 py-4 rounded-lg font-bold text-lg">Iniciar sesión</Link>
+                  <Link to="/register" className="bg-white/5 px-8 py-4 rounded-lg text-lg">Registrarse</Link>
+                </>
+              )}
+            </div>
+          </div>
+        </section>
 
-      <section className="mx-auto py-6 max-w-6xl">
-        <h2 className="mb-4 font-bold text-2xl">Características</h2>
-        <div className="gap-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="bg-white/3 p-4 rounded-lg">
-            <div className="mb-2 text-3xl">⚡</div>
-            <h3 className="font-semibold">Juego en tiempo real</h3>
-            <p className="text-white/80 text-sm">Juega con amigos con puntuación instantánea y rankings en vivo</p>
+        <section className="features-section">
+          <h2>Características</h2>
+          <div className="features-grid">
+            <div className="feature-card">
+              <div className="feature-icon">⚡</div>
+              <h3>Juego en tiempo real</h3>
+              <p>Juega con amigos con puntuación instantánea y partidas dinámicas</p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon">🎮</div>
+              <h3>Fácil de unirse</h3>
+              <p>Únete con códigos de 6 dígitos o explora partidas públicas</p>
+            </div>
+
+            <div className="feature-card">
+              <div className="feature-icon">🤝</div>
+              <h3>Compite con amigos</h3>
+              <p>Sigue tus estadísticas y demuestra tus conocimientos</p>
+            </div>
           </div>
-          <div className="bg-white/3 p-4 rounded-lg">
-            <div className="mb-2 text-3xl">🎮</div>
-            <h3 className="font-semibold">Fácil de unirse</h3>
-            <p className="text-white/80 text-sm">Únete con códigos de 6 dígitos o explora partidas públicas</p>
-          </div>
-          <div className="bg-white/3 p-4 rounded-lg">
-            <div className="mb-2 text-3xl">🏆</div>
-            <h3 className="font-semibold">Competitivo</h3>
-            <p className="text-white/80 text-sm">Sigue tus estadísticas y compite con amigos</p>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </Layout>
   );
 }

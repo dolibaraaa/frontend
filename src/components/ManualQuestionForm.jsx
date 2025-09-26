@@ -29,9 +29,6 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
     if (formData.options.some(opt => !opt.trim())) {
       return 'Todas las opciones son requeridas';
     }
-    if (!user?.getIdToken) {
-      return 'Debes iniciar sesión para crear preguntas';
-    }
     return '';
   };
 
@@ -51,11 +48,8 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
     setLoading(true);
     setError('');
     setSuccessMessage('');
-
     try {
-      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const token = await user.getIdToken();
-
+      // Build payload and hand off to parent for saving. Parent will perform the network request.
       const payload = {
         text: formData.question,
         options: formData.options,
@@ -64,29 +58,18 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
         explanation: ''
       };
 
-      const response = await fetch(`${apiBase}/api/questions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al guardar la pregunta');
-      }
-
-      setSuccessMessage('¡Pregunta guardada correctamente!');
-      
+      setSuccessMessage('Guardando...');
       if (onQuestionCreated) {
-        onQuestionCreated(data.question || { ...payload });
+        const result = await Promise.resolve(onQuestionCreated(payload));
+        // If parent returns the saved question, show its text in the success message
+        const savedText = result && result.text ? result.text : payload.text;
+        setSuccessMessage(`Pregunta creada: "${savedText}"`);
+      } else {
+        setSuccessMessage('¡Pregunta preparada!');
       }
     } catch (err) {
-      console.error('Error al guardar la pregunta:', err);
-      setError(err.message || 'Error de conexión');
+      console.error('Error al preparar la pregunta:', err);
+      setError(err.message || 'Error al guardar la pregunta');
     } finally {
       setLoading(false);
     }
@@ -157,7 +140,7 @@ const ManualQuestionForm = ({ topics, onQuestionCreated, onCancel }) => {
         <button 
           type="submit" 
           className="btn btn-primary" 
-          disabled={loading || !!error}
+          disabled={loading}
         >
           {loading ? (
             <>

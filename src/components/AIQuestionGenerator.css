@@ -12,11 +12,10 @@
   backdrop-filter: blur(14px) saturate(1.2);
 }
 
+
 .ai-generator-modal {
-  background: linear-gradient(135deg,
-    rgba(124, 58, 237, 0.15),
-    rgba(245, 158, 11, 0.12)
-  );
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(245, 158, 11, 0.12));
+  /* animations removed for performance */
   border-radius: clamp(20px, 5vw, 28px);
   padding: 0;
   max-width: min(600px, 95%);
@@ -24,49 +23,25 @@
   max-height: 85vh;
   margin: var(--bb-spacing-mobile);
   overflow-y: auto;
-  box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.4),
-    0 4px 12px rgba(124, 58, 237, 0.2),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(124, 58, 237, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
   border: 2px solid rgba(124, 58, 237, 0.4);
   backdrop-filter: blur(20px);
-  animation: modalAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
+  /* entrance animation removed */
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .ai-generator-modal::before {
+  /* decorative overlay removed animations for performance */
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  transform: translateX(-100%);
-  animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-@keyframes modalAppear {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+  transform: none;
 }
 
 .ai-generator-header {
@@ -79,43 +54,24 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid rgba(124, 58, 237, 0.3);
+  /* transitions disabled for performance */
+  transition: none;
   position: relative;
   overflow: hidden;
 }
 
-.ai-generator-header::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(to right,
-    var(--bb-primary),
-    var(--bb-secondary)
-  );
-  opacity: 0.5;
-}
 
 .ai-generator-header h2 {
   margin: 0;
   font-size: 1.8rem;
   font-weight: 800;
-  background: linear-gradient(135deg,
-    var(--bb-primary-light) 0%,
-    var(--bb-secondary) 50%,
-    var(--bb-accent) 100%
-  );
+  background: linear-gradient(135deg, var(--bb-primary-light) 0%, var(--bb-secondary) 50%, var(--bb-accent) 100%);
   background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: 1px;
-  animation: gradientShift 8s ease infinite;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  /* gradient animation removed for performance */
 }
 
 @keyframes gradientShift {
@@ -125,11 +81,9 @@
 }
 
 .close-btn {
-  background: linear-gradient(135deg,
-    rgba(124, 58, 237, 0.3),
-    rgba(245, 158, 11, 0.3)
-  );
-  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(245, 158, 11, 0.3));
+  transition: none;
+  border: 2px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.9);
   font-size: 24px;
   width: 44px;
@@ -139,28 +93,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.2),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(8px);
+  box-shadow: none;
+  backdrop-filter: blur(6px);
 }
 
 .close-btn:hover {
-  background: linear-gradient(135deg,
-    rgba(124, 58, 237, 0.4),
-    rgba(245, 158, 11, 0.4)
-  );
-  border-color: rgba(255, 255, 255, 0.25);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.36), rgba(245, 158, 11, 0.36));
+  border-color: rgba(255, 255, 255, 0.16);
   color: white;
-  transform: translateY(-2px);
-  box-shadow: 
-    0 8px 20px rgba(0, 0, 0, 0.3),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  transform: none;
+  box-shadow: none;
 }
 
 .close-btn:active {
-  transform: translateY(1px);
+  transform: none;
 }
 
 .ai-generator-content {
@@ -312,7 +258,6 @@
   align-items: center;
   gap: 0.5rem;
 }
-
 .form-group label::before {
   content: '🎯';
   font-size: 1.2em;

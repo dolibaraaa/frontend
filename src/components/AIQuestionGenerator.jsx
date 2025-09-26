@@ -24,6 +24,7 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
   
   // No necesitamos monitorear este cambio de estado
   const [error, setError] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
   const [generatedQuestions, setGeneratedQuestions] = useState([]);
   const [canCreateGame, setCanCreateGame] = useState(false);
 
@@ -279,7 +280,7 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
         )}
         {/* Formulario manual */}
         {showManualForm && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 380, padding: '32px 0 12px 0', animation: 'fadeIn .5s' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 380, padding: '32px 0 12px 0' }}>
             {manualStep === 0 ? (
               <form
                 className="manual-question-form"
@@ -318,73 +319,89 @@ const AIQuestionGenerator = ({ onQuestionsGenerated, onClose }) => {
                   </div>
                 </div>
               </form>
-            ) : (
-              <div style={{ width: '100%', maxWidth: 650, margin: '0 auto', background: 'rgba(26,26,46,0.97)', borderRadius: 28, boxShadow: '0 8px 32px rgba(42,122,228,0.13)', border: '2.5px solid var(--bb-primary)', padding: '36px 32px 28px 32px', backdropFilter: 'blur(14px) saturate(1.2)', animation: 'fadeIn .5s' }}>
+              ) : (
+              <div style={{ width: '100%', maxWidth: 650, margin: '0 auto', background: 'rgba(26,26,46,0.97)', borderRadius: 28, boxShadow: '0 8px 32px rgba(42,122,228,0.13)', border: '2.5px solid var(--bb-primary)', padding: '36px 32px 28px 32px', backdropFilter: 'blur(14px) saturate(1.2)' }}>
                 <div style={{ textAlign: 'center', marginBottom: 18, fontWeight: 900, fontSize: '1.25rem', letterSpacing: 1.1, color: 'var(--bb-primary)', background: 'var(--bb-gradient-primary)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                   ¡Vamos! Pregunta {manualQuestions.length + 1} de {manualCount}
                 </div>
                                 <ManualQuestionForm
-                  topics={[manualTopic]}
-                  onQuestionCreated={async (q) => {
-                    try {
-                      setLoading(true);
-                      setError('');
-                      
-                      const next = [...manualQuestions, { ...q, category: manualTopic }];
-                      
-                      // Si es la última pregunta
-                      if (next.length === manualCount) {
-                        const apiBase = import.meta.env.VITE_API_URL;
-                        if (!apiBase) {
-                          setError('Error de configuración: URL del API no definida');
-                          return;
-                        }
-                        const token = await user.getIdToken();
-                        
-                        const response = await fetch(`${apiBase}/api/questions/bulk`, {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${token}`
-                          },
-                          body: JSON.stringify({ questions: next })
-                        });
+                                  topics={[manualTopic]}
+                                  onQuestionCreated={async (q) => {
+                                    // q is the payload prepared by the child
+                                    try {
+                                      setLoading(true);
+                                      setError('');
 
-                        const data = await response.json();
+                                      const apiBase = import.meta.env.VITE_API_URL;
+                                      if (!apiBase) {
+                                        throw new Error('Error de configuración: URL del API no definida');
+                                      }
+                                      if (!user || !user.getIdToken) {
+                                        throw new Error('Debes iniciar sesión para crear preguntas');
+                                      }
+                                      const token = await user.getIdToken();
 
-                        if (!response.ok) {
-                          throw new Error(data.error || 'Error al guardar las preguntas');
-                        }
+                                      // Save single question
+                                      const response = await fetch(`${apiBase}/api/questions`, {
+                                        method: 'POST',
+                                        headers: {
+                                          'Content-Type': 'application/json',
+                                          Authorization: `Bearer ${token}`
+                                        },
+                                        body: JSON.stringify(q)
+                                      });
 
-                        // Notificar al componente padre
-                        if (onQuestionsGenerated) {
-                          onQuestionsGenerated(next);
-                        }
+                                      const data = await response.json();
+                                      if (!response.ok) {
+                                        throw new Error(data.error || 'Error al guardar la pregunta');
+                                      }
 
-                        // Mostrar mensaje de éxito y cerrar
-                        setError('¡Todas las preguntas han sido guardadas exitosamente!');
-                        setTimeout(() => {
-                          setShowManualForm(false);
-                          setError('');
-                        }, 1500);
-                      } else {
-                        // Si no es la última pregunta, actualizar el contador y continuar
-                        setManualQuestions(next);
-                        setManualStep(manualStep + 1);
-                        // Mostrar mensaje de progreso
-                        setError(`¡Pregunta ${next.length} de ${manualCount} guardada exitosamente!`);
-                        setTimeout(() => setError(''), 1500);
-                      }
-                    } catch (error) {
-                      setError('No se pudo guardar la pregunta: ' + (error.message || 'Por favor, intenta de nuevo.'));
-                    } finally {
-                      setLoading(false);
-                    }
-                  }}
-                  onCancel={() => {
-                    setShowManualForm(false);
-                  }}
-                />
+                                      const saved = data.question || { ...q };
+                                      const next = [...manualQuestions, { ...saved, category: manualTopic }];
+
+                                      // If last question, bulk save (server may already store them individually, but keep compatibility)
+                                      if (next.length === manualCount) {
+                                        // Do a bulk save to keep existing API usage
+                                        const bulkResp = await fetch(`${apiBase}/api/questions/bulk`, {
+                                          method: 'POST',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                            Authorization: `Bearer ${token}`
+                                          },
+                                          body: JSON.stringify({ questions: next })
+                                        });
+                                        const bulkData = await bulkResp.json();
+                                        if (!bulkResp.ok) {
+                                          throw new Error(bulkData.error || 'Error al guardar las preguntas en lote');
+                                        }
+
+                                        if (onQuestionsGenerated) {
+                                          onQuestionsGenerated(next);
+                                        }
+
+                                        setStatusMessage('¡Todas las preguntas han sido guardadas exitosamente!');
+                                        setTimeout(() => {
+                                          setShowManualForm(false);
+                                          setStatusMessage('');
+                                        }, 1500);
+                                        return next;
+                                      } else {
+                                        setManualQuestions(next);
+                                        setManualStep(prev => prev + 1);
+                                        setStatusMessage(`¡Pregunta ${next.length} de ${manualCount} guardada exitosamente!`);
+                                        setTimeout(() => setStatusMessage(''), 1500);
+                                        return saved;
+                                      }
+                                    } catch (error) {
+                                      setError('No se pudo guardar la pregunta: ' + (error.message || 'Por favor, intenta de nuevo.'));
+                                    } finally {
+                                      setLoading(false);
+                                    }
+                                  }}
+                                  onCancel={() => {
+                                    setShowManualForm(false);
+                                  }}
+                                />
               </div>
             )}
           </div>
