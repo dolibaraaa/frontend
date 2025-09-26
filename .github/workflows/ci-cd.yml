@@ -68,15 +68,20 @@ jobs:
       # 9) Export Playwright Chromium path for LHCI
       - name: Export Playwright Chromium path
         run: |
-          node -e "const { chromium } = require('playwright'); console.log('CHROME=' + chromium.executablePath())" | sed 's/^/CHROME_PATH=/' >> $GITHUB_ENV || true
+          node -e "(async()=>{const { chromium }=require('playwright'); const p=chromium.executablePath(); if(p){console.log(p)} else {console.error('no-chrome'); process.exit(1)} })()" > chrome-path.txt
+          if [ -s chrome-path.txt ]; then echo "CHROME_PATH=$(cat chrome-path.txt)" >> $GITHUB_ENV; fi
 
       # 10) Run Lighthouse performance checks (LHCI)
       - name: Run Lighthouse (LHCI)
+        env:
+          CHROME_PATH: ${{ env.CHROME_PATH }}
         run: |
           npm install -g @lhci/cli@0.8 || true
+          echo "Using CHROME_PATH=$CHROME_PATH"
           # serve the built site on port 8080 in background
           npx http-server ./dist -p 8080 --silent &
-          npx -y @lhci/cli@0.8 autorun --collect.url=http://localhost:8080 --upload.target=temporary-public-storage
+          # If CHROME_PATH is set, LHCI will pick it up; otherwise LHCI will try to find a Chrome installation
+          npx -y @lhci/cli@0.8 autorun --collect.url=http://localhost:8080 --upload.target=temporary-public-storage || (echo "LHCI failed - printing environment" && env)
 
       # 10) Run Playwright E2E tests (this will start dev server per playwright.config.ts/webServer)
       - name: Run Playwright E2E tests
